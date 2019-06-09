@@ -1,0 +1,45 @@
+<style>
+.CodeMirror {width: 100%%; height: 100%%; }
+/* .CodeMirror {height: auto; } */
+</style>
+
+<script>
+let wrapped = true;
+function toggleCheckbox(){
+    if(wrapped){
+        editor.setOption("lineWrapping", false);
+        editor.refresh();
+    }
+    else{
+        editor.setOption("lineWrapping", true);
+        editor.refresh();
+    }
+    wrapped = !wrapped;
+}
+</script>
+
+<div>
+    <input type="checkbox" id="toggleLineWrap" name="toggleLineWrap" onchange="toggleCheckbox()" checked>
+    <label for="toggleLineWrap">Line Wrap</label>
+</div>
+<div><textarea id="code" autofocus>%s</textarea></div>
+
+<script>
+    var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+        lineNumbers: false,
+        gutter: true,
+        lineWrapping: true,
+        vimMode: %s,
+        keyMap: "%s",  // "sublime" "emacs" "sublime"
+    //  extraKeys: {"Alt-F": "findPersistent"},
+    //  extraKeys: {"F11": toggleFullscreenEditing, "Esc": toggleFullscreenEditing}, // breaks editor
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        showCursorWhenSelecting: true,
+        viewportMargin: Infinity,  //https://codemirror.net/demo/resize.html
+        tabSize: 4,
+        mode: "htmlmixed",
+        theme: "%s"
+    });
+    // editor.setSize($(window).width(),$(window).height()-30);   // overrides CSS - https://codemirror.net/doc/manual.html
+</script>
