@@ -398,23 +398,21 @@ def mirror_start(self):
 Editor.mirror_start = mirror_start
 
 
-# WITH EXTRA BUTTON
-#
-# def keystr(k):
-#     key = QKeySequence(k)
-#     return key.toString(QKeySequence.NativeText)
+def keystr(k):
+    key = QKeySequence(k)
+    return key.toString(QKeySequence.NativeText)
 
-# hotkey = "Ctrl+Shift+Y"
-# def setupEditorButtonsFilter(buttons, editor):
-#     b = editor.addButton(
-#         icon=None, # os.path.join(addon_path, "icons", "tm.png")
-#         cmd="CM",
-#         func=mirror_start,
-#         tip="edit current field in external window ({})".format(keystr(hotkey)),
-#         keys=hotkey)
-#     buttons.append(b)
-#     return buttons
-# addHook("setupEditorButtons", setupEditorButtonsFilter)
+
+def setupEditorButtonsFilter(buttons, editor):
+    k = gc("hotkey_codemirror", "Ctrl+Shift+Y")
+    b = editor.addButton(
+        icon=os.path.join(addon_path, "web/codemirror/doc", "logo.png"),
+        cmd="CM",
+        func=mirror_start,
+        tip="extended edit html source ({})".format(keystr(k)),
+        keys=k)
+    buttons.append(b)
+    return buttons
 
 
 # set shortcut for built-in viewer WITHOUT adding a button
@@ -429,4 +427,9 @@ def mySetupShortcuts(self):
         else:
             keys, fn, _ = row
         QShortcut(QKeySequence(keys), self.widget, activated=fn)
-Editor.setupShortcuts = wrap(Editor.setupShortcuts, mySetupShortcuts)
+
+
+if gc("with_button", True):
+    addHook("setupEditorButtons", setupEditorButtonsFilter)
+else:
+    Editor.setupShortcuts = wrap(Editor.setupShortcuts, mySetupShortcuts)

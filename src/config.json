@@ -4,6 +4,7 @@
     "format":"bs4-prettified",
     "hotkey_codemirror":"Ctrl+Shift+Y",
     "keymap":"sublime",
-    "theme":"xq-light"
+    "theme":"xq-light",
+    "with_button":true
 }
  
