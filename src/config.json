@@ -2,6 +2,7 @@
     "default_height": 1000,
     "default_width": 700,
     "format":"bs4-prettified",
+    "fold after close": true,
     "hotkey_codemirror":"Ctrl+Shift+Y",
     "keymap":"sublime",
     "theme":"xq-light",

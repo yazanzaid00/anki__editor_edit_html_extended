@@ -27,6 +27,7 @@ function toggleCheckbox(){
 <script>
     var editor = CodeMirror.fromTextArea(document.getElementById("code"), {
         lineNumbers: false,
+        styleActiveLine: true,
         gutter: true,
         lineWrapping: true,
         vimMode: %s,
@@ -36,10 +37,22 @@ function toggleCheckbox(){
         autoCloseBrackets: true,
         matchBrackets: true,
         showCursorWhenSelecting: true,
-        viewportMargin: Infinity,  //https://codemirror.net/demo/resize.html
+        viewportMargin: Infinity,  // https://codemirror.net/demo/resize.html
         tabSize: 4,
         mode: "htmlmixed",
         theme: "%s"
     });
     // editor.setSize($(window).width(),$(window).height()-30);   // overrides CSS - https://codemirror.net/doc/manual.html
+    let cursor = editor.getSearchCursor('%s');
+    cursor.findNext();
+    let newpos  = cursor.from()
+    cursor.replace("");
+    editor.setCursor(newpos);
+    //editor.setCursor(1, 3);
+
+    function insertTextAtCursor(text) {
+        var doc = editor.getDoc();
+        var cursor = doc.getCursor();
+        doc.replaceRange(text, cursor);
+    }
 </script>

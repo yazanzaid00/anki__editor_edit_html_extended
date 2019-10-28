@@ -5,8 +5,10 @@ Copyright (c) 2019 ignd
           (c) 2019 Joseph Lorimer <joseph@lorimer.me>
               https://github.com/luoliyan/anki-misc/blob/master/html-editor-tweaks/__init__.py
               https://ankiweb.net/shared/info/410936778
+          (c) 2013, Dave Mankoff
           (c) 2014 - 2016 Detlev Offenbach
               <detlev@die-offenbachs.de> (the function __execJavaScript)
+          (c) 2017 Glutanimate
           (c) Ankitects Pty Ltd and contributors
 
 This program is free software: you can redistribute it and/or modify
@@ -67,6 +69,33 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
+
+This addon bundles parts of the htmlmin package, https://github.com/mankyd/htmlmin,
+covered by the following copyright and permission notice:
+    Copyright (c) 2013, Dave Mankoff
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+        * Redistributions of source code must retain the above copyright
+        notice, this list of conditions and the following disclaimer.
+        * Redistributions in binary form must reproduce the above copyright
+        notice, this list of conditions and the following disclaimer in the
+        documentation and/or other materials provided with the distribution.
+        * Neither the name of Dave Mankoff nor the
+        names of its contributors may be used to endorse or promote products
+        derived from this software without specific prior written permission.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+    ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+    WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL DAVE MANKOFF BE LIABLE FOR ANY
+    DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+    (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+    LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+    ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+    (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+    SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 """
 
 
@@ -81,12 +110,15 @@ from aqt.qt import *
 from aqt.editor import Editor
 from aqt.webview import AnkiWebView
 from anki.hooks import addHook, wrap
-from aqt.utils import askUser
+from aqt.utils import askUser, showInfo
 
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
 from PyQt5.QtCore import Qt, QMetaObject
+
+
+from .htmlmin import Minifier
 
 
 def gc(arg, fail=False):
@@ -100,6 +132,9 @@ mw.addonManager.setWebExports(__name__, regex)
 codemirror_path = "/_addons/%s/web/" % addonfoldername
 
 
+# unique_string = '<span style="display:none">äöüäöü</span>'
+unique_string = 'äöüäöü'
+
 themes = ["3024-day", "3024-night", "abcdef", "ambiance", "ambiance-mobile",
           "base16-dark", "base16-light", "bespin", "blackboard", "cobalt", "colorforth",
           "darcula", "dracula", "duotone-dark", "duotone-light", "eclipse", "elegant",
@@ -109,7 +144,8 @@ themes = ["3024-day", "3024-night", "abcdef", "ambiance", "ambiance-mobile",
           "paraiso-dark", "paraiso-light", "pastel-on-dark", "railscasts", "rubyblue",
           "seti", "shadowfox", "solarized", "ssms", "the-matrix", "tomorrow-night-bright",
           "tomorrow-night-eighties", "ttcn", "twilight", "vibrant-ink", "xq-dark",
-          "xq-light", "yeti", "zenburn"]
+          "xq-light", "yeti", "zenburn",
+          "moxer", "material-darker", "material-palenight", "material-ocean"]
 
 
 if gc('theme') in themes:
@@ -154,6 +190,7 @@ addon_jsfiles = ["codemirror/lib/codemirror.js",
                  "codemirror/addon/scroll/annotatescrollbar.js",
                  "codemirror/addon/search/matchesonscrollbar.js",
                  "codemirror/addon/search/jump-to-line.js",
+                 "codemirror/addon/selection/active-line.js",
                  "codemirror/addon/edit/closebrackets.js",
                  "codemirror/addon/wrap/hardwrap.js",
                  "codemirror/addon/fold/foldcode.js",
@@ -202,16 +239,13 @@ class MyDialog(QDialog):
         QMetaObject.connectSlotsByName(self)
         acceptShortcut = QShortcut(QKeySequence("Ctrl+Return"), self)
         acceptShortcut.activated.connect(self.onAccept)
-
         self.web.stdHtml(bodyhtml, cssfiles, jsfiles)
-        # self.web.loadFinished.connect(self.load_finished)
-        # self.web.setFocus()
-
-    # def load_finished(self, ok):
-    #     pass
 
     def onAccept(self):
         global edited_fieldcontent
+        # replace cursor with unique string
+        s = """insertTextAtCursor('%s')""" % unique_string
+        self.__execJavaScript(s)
         edited_fieldcontent = self.__execJavaScript(self.js_save_cmd)
         self.accept()
 
@@ -223,7 +257,8 @@ class MyDialog(QDialog):
     def closeEvent(self, event):
         ok = askUser("Close and discard changes?")
         if ok:
-            event.accept()
+            event.ignore()
+            self.reject()
         else:
             event.ignore()
 
@@ -281,40 +316,53 @@ open_text_close = re.compile('(<[^/>]+>) ([^<>]+) (</)')
 tag_space_punc = re.compile('(>) ([.,:;])')
 
 
+# from https://ankiweb.net/shared/info/410936778, doesn't work with syntax highlighted code
+# def postprocess(s):
+#     """Collapse pretty printed HTML, keeping somewhat sensible white space.
+
+#     Beautiful Soup replaces any spacing around tags with newlines and
+#     indentation. A naive function that attempts to reverse this by
+#     collapsing the newlines and indentation into a single white space
+#     will leave spurious spaces around tags. On the other hand, some of
+#     this white space is essential both semantically and for readability.
+#     We attempt to reach a sane compromise via these transformations:
+
+#     - <span> text </span> => <span>text</span>
+#     - <span> text         => <span>text
+#     - <span> <span>       => <span><span>
+#     - </span> </span>     => </span></span>
+#     - <span> ,            => <span>,
+#     - </span> ,           => </span>,
+#     """
+#     # this breaks syntax highlighted code, see http://pygments.org/docs/formatters/#HtmlFormatter
+#     # lineseparator "defaults to "\n", which is enough to break a line inside <pre> tags"
+#     # This line removes those "\n". Workaround: "you can e.g. set it to "<br>" to get HTML
+#     # line breaks."
+#     s = re.sub('\n', ' ', s)
+#     # the rest still kills whitespace so that all lines are unindented.
+#     # Don't use this
+#     s = re.sub('[ ]+', ' ', s)
+#     new = s
+#     while True:
+#         new = open_text_close.sub('\\1\\2\\3', new)
+#         new = open_space_text.sub('\\1\\2', new)
+#         new = open_space_open.sub('\\1\\2', new)
+#         new = close_space_close.sub('\\1\\2', new)
+#         new = tag_space_punc.sub('\\1\\2', new)
+#         if new == s:
+#             break
+#         s = new
+#     return s
+
+
 def postprocess(s):
-    """Collapse pretty printed HTML, keeping somewhat sensible white space.
-
-    Beautiful Soup replaces any spacing around tags with newlines and
-    indentation. A naive function that attempts to reverse this by
-    collapsing the newlines and indentation into a single white space
-    will leave spurious spaces around tags. On the other hand, some of
-    this white space is essential both semantically and for readability.
-    We attempt to reach a sane compromise via these transformations:
-
-    - <span> text </span> => <span>text</span>
-    - <span> text         => <span>text
-    - <span> <span>       => <span><span>
-    - </span> </span>     => </span></span>
-    - <span> ,            => <span>,
-    - </span> ,           => </span>,
-    """
-    s = re.sub('\n', ' ', s)
-    s = re.sub('[ ]+', ' ', s)
-    new = s
-    while True:
-        new = open_text_close.sub('\\1\\2\\3', new)
-        new = open_space_text.sub('\\1\\2', new)
-        new = open_space_open.sub('\\1\\2', new)
-        new = close_space_close.sub('\\1\\2', new)
-        new = tag_space_punc.sub('\\1\\2', new)
-        if new == s:
-            break
-        s = new
-    return s
-
-
-def compact(html):
-    return postprocess(html)
+    if not gc("fold after close", True):
+        return s
+    minifier = Minifier()
+    for l in s.splitlines():
+        minifier.input(l)
+    out = minifier.output
+    return out
 
 
 def reindent(s, factor=4):
@@ -347,24 +395,107 @@ def prettify(html):
         return html
 
 
+# from Sync Cursor Between Fields and HTML Editor by Glutanimate
+# https://ankiweb.net/shared/info/138856093
+# based on SO posts by Tim Down / B T (http://stackoverflow.com/q/16095155)
+js_move_cursor = """
+    function findHiddenCharacters(node, beforeCaretIndex) {
+    var hiddenCharacters = 0
+    var lastCharWasWhiteSpace=true
+    for(var n=0; n-hiddenCharacters<beforeCaretIndex &&n<node.length; n++) {
+        if([' ','\\n','\\t','\\r'].indexOf(node.textContent[n]) !== -1) {
+            if(lastCharWasWhiteSpace)
+                hiddenCharacters++
+            else
+                lastCharWasWhiteSpace = true
+        } else {
+            lastCharWasWhiteSpace = false   
+        }
+    }
+
+    return hiddenCharacters
+}
+
+var setSelectionByCharacterOffsets = null;
+
+if (window.getSelection && document.createRange) {
+    setSelectionByCharacterOffsets = function(containerEl, position) {
+        var charIndex = 0, range = document.createRange();
+        range.setStart(containerEl, 0);
+        range.collapse(true);
+        var nodeStack = [containerEl], node, foundStart = false, stop = false;
+
+        while (!stop && (node = nodeStack.pop())) {
+            if (node.nodeType == 3) {
+                var hiddenCharacters = findHiddenCharacters(node, node.length)
+                var nextCharIndex = charIndex + node.length - hiddenCharacters;
+
+                if (position >= charIndex && position <= nextCharIndex) {
+                    var nodeIndex = position - charIndex
+                    var hiddenCharactersBeforeStart = findHiddenCharacters(node, nodeIndex)
+                    range.setStart(node, nodeIndex + hiddenCharactersBeforeStart );
+                    range.setEnd(node, nodeIndex + hiddenCharactersBeforeStart);
+                    stop = true;
+                }
+                charIndex = nextCharIndex;
+            } else {
+                var i = node.childNodes.length;
+                while (i--) {
+                    nodeStack.push(node.childNodes[i]);
+                }
+            }
+        }
+
+        var sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
+} else if (document.selection) {
+    setSelectionByCharacterOffsets = function(containerEl, start, end) {
+        var textRange = document.body.createTextRange();
+        textRange.moveToElementText(containerEl);
+        textRange.collapse(true);
+        textRange.moveEnd("character", end);
+        textRange.moveStart("character", start);
+        textRange.select();
+    };
+}
+
+
+setSelectionByCharacterOffsets(currentField, %s)
+"""
+
+
 def _onCMUpdateField(self):
+    c = postprocess(edited_fieldcontent)
+    # bs4ed = bs4.BeautifulSoup(c, "html.parser")
+    # ef_text = bs4ed.getText().replace('\n', ' ')
+    # pos = len(ef_text.split(unique_string)[0])
     try:
         note = mw.col.getNote(self.nid)
     except:   # new note
-        self.note.fields[self.myfield] = compact(edited_fieldcontent)
+        self.note.fields[self.myfield] = c.replace(unique_string, "")
         self.note.flush()
     else:
-        note.fields[self.myfield] = compact(edited_fieldcontent)
+        note.fields[self.myfield] = c
         note.flush()
         mw.requireReset()
         mw.reset()
     self.loadNote(focusTo=self.myfield)
+    # the function setSelectionByCharacterOffsets isn't precise and sometimes produces errors 
+    # with complex content and ruins the field contents. So cursor sync just works in one way ....
+    # self.web.eval(js_move_cursor % pos)
 Editor._onCMUpdateField = _onCMUpdateField
 
 
 def on_CMdialog_finished(self, status):
     if status:
         self.saveNow(lambda: self._onCMUpdateField())
+    else:
+        self.note.fields[self.cm_field] = self.original_cm_text
+        self.saveTags()
+        self.note.flush()
+        self.loadNote(focusTo=self.cm_field)
 Editor.on_CMdialog_finished = on_CMdialog_finished
 
 
@@ -376,12 +507,12 @@ def readfile():
         return f.read()
 
 
-def cm_start_dialog(self, field):
+def _cm_start_dialog(self, field):
     tmpl_content = readfile()
     win_title = 'Anki - edit html source code for field in codemirror'
     js_save_cmd = "editor.getValue()"
     pretty_content = prettify(self.note.fields[field])
-    bodyhtml = tmpl_content % (pretty_content, keymap[1], keymap[0], selectedtheme)
+    bodyhtml = tmpl_content % (pretty_content, keymap[1], keymap[0], selectedtheme, unique_string)
     d = MyDialog(None, bodyhtml, win_title, js_save_cmd)
     # exec_() doesn't work - jseditor isn't loaded = blocked
     # finished.connect via https://stackoverflow.com/questions/39638749/
@@ -389,13 +520,46 @@ def cm_start_dialog(self, field):
     d.setModal(True)
     d.show()
     d.web.setFocus()
+Editor._cm_start_dialog = _cm_start_dialog
+
+
+def cm_start_dialog2(self, field):
+    self.original_cm_text = self.note.fields[field]
+    self.cm_field = field
+    self.cm_nid = self.note.id
+    self.web.eval("""setFormat("insertText", "%s");""" % unique_string)
+    self.saveNow(lambda: self._cm_start_dialog(field))
+Editor.cm_start_dialog2 = cm_start_dialog2
+
+
+def cm_start_dialog(self, field):
+    self.saveNow(lambda: self.cm_start_dialog2(field))
 Editor.cm_start_dialog = cm_start_dialog
 
 
 def mirror_start(self):
+    modifiers = self.mw.app.queryKeyboardModifiers()
+    shift_and_click = modifiers == Qt.ShiftModifier
+    if shift_and_click:
+        self.myOnFieldUndoHtmlExtended()
+        return
     self.myfield = self.currentField
     self.saveNow(lambda: self.cm_start_dialog(self.myfield))
 Editor.mirror_start = mirror_start
+
+
+def myOnFieldUndoHtmlExtended(self):
+    if self.cm_nid != self.note.id:
+        return
+    if not hasattr(self, "original_cm_text") or not self.original_cm_text:
+        return
+    if not hasattr(self, "cm_field"):  # may be index 0
+        return
+    self.note.fields[self.cm_field] = self.original_cm_text
+    self.loadNote()
+    self.web.setFocus()
+    self.loadNote(focusTo=self.cm_field)
+Editor.myOnFieldUndoHtmlExtended = myOnFieldUndoHtmlExtended
 
 
 def keystr(k):

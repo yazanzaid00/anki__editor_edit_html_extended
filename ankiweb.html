@@ -1,9 +1,25 @@
-This add-on loads the html source code into a <a href="https://codemirror.net/" rel="nofollow">codemirror</a> instance. To make the source code more readable it uses many functions from luoliyan's recent great add-on <a href="https://ankiweb.net/shared/info/410936778" rel="nofollow">HTML Editor Tweaks</a>. You should use his add-on: It's the original and since this add-on loads a webpage it's much slower if you have really much in your field. This warning is mostly relevant if you use Anki incremental reading etc. But on my computer with the fields I use I don't notice a difference. This add-on offers syntax highlighting and a built-in search. This add-on doesn't replace the built-in html view but uses it's own shortcut that you can adjust. You can also adjust the <a href="https://codemirror.net/demo/theme.html" rel="nofollow">theme</a> and key layout it uses. Maybe you should just use a different add-on that loads the field source code directly into your editor of choice ...
+This add-on loads the html source code into a <a href="https://codemirror.net/" rel="nofollow">codemirror</a> instance. 
 
-Use it at your own risk and the warning from <a href="https://ankiweb.net/shared/info/410936778" rel="nofollow">HTML Editor Tweaks</a> also apply here. No support, but if you find a bug let me know on <a href="https://github.com/ijgnd/anki__editor_edit_html_extended" rel="nofollow">github</a> - maybe I'll have an idea. Also merge requests, improvements and feedback is welcome. 
+<img src="https://raw.githubusercontent.com/ijgnd/anki__editor_edit_html_extended/master/screenshots/screenshot_2.png"> 
 
-<b>some useful keycombos for the default keymap</b>:
+This add-on offers syntax highlighting and a built-in search. You can adjust the <a href="https://codemirror.net/demo/theme.html" rel="nofollow">theme</a> and key layout it uses ("sublime","emacs","vim").  
 
+By default it makes the source code more readable by using the function prettify of the python package beautifulsoup. You can also use functions from luoliyan's recent great add-on <a href="https://ankiweb.net/shared/info/410936778" rel="nofollow">HTML Editor Tweaks</a>. After closing it tries to minify the source code with 
+<a href="https://github.com/mankyd/htmlmin" rel="nofollow">htmlmin</a> (configurable).
+
+If you click the add-on button while holding the shift-key you revert the field to the state before you opened this html source view.
+
+When you open the window the cursor position is synced by reusing code from glutanimate's <a href="https://ankiweb.net/shared/info/138856093" rel="nofollow">Sync Cursor Between Fields and HTML Editor</a>. When you close the window the cursor is not synced.
+
+add-on offers syntax highlighting and a built-in search. You can adjust the <a href="https://codemirror.net/demo/theme.html" rel="nofollow">theme</a> and key layout it uses ("sublime","emacs","vim") .  
+
+This add-on loads a webpage. On my computer I don't notice a speed difference. But it your computer is slow or you put thousands of words into a field (as in incremental reading) it will be slower. In this case (and maybe in general) just use the other add-on or another add-on that loads the field source code directly into your editor of choice ...
+
+This add-on doesn't replace the built-in html view but uses it's own shortcut that you can adjust. 
+
+Use it at your own risk. This add-on also reuses another function luoliyan's add-on for folding the html after you finished editing. So the warning from <a href="https://ankiweb.net/shared/info/410936778" rel="nofollow">HTML Editor Tweaks</a> also applies here. No support, but if you find a bug let me know on <a href="https://github.com/ijgnd/anki__editor_edit_html_extended" rel="nofollow">github</a> - maybe I'll have an idea. Also pull requests, improvements and feedback is welcome. 
+
+<b> some useful keycombos for the default keymap</b>:
 - "Esc": Close window, discard changes
 - "Ctrl+F": Find
 - "Ctrl-H": Replace
@@ -11,3 +27,13 @@ Use it at your own risk and the warning from <a href="https://ankiweb.net/shared
 - "Ctrl-Alt-Down": addCursorToNextLine
 - "Ctrl-F3": search for word under cursor (findUnderNext)
 - "Shift-Ctrl-F3": search for word under cursor backwards (findUnderPrevious)
+
+<b> Versions</b>
+- 2019-10-28 minify with htmlmin to destroy less formatting, sync cursor when opening, highlight active line
+- 2019-06-10 first release
+
+<b> Other Authors</b>
+- Joseph Lorimer/luoliyan
+- Detlev Offenbach
+- Marijn Haverbeke and others
+- Dave Mankoff
