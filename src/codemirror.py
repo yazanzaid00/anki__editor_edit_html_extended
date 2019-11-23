@@ -512,7 +512,14 @@ def _cm_start_dialog(self, field):
     win_title = 'Anki - edit html source code for field in codemirror'
     js_save_cmd = "editor.getValue()"
     pretty_content = prettify(self.note.fields[field])
-    bodyhtml = tmpl_content % (pretty_content, keymap[1], keymap[0], selectedtheme, unique_string)
+    bodyhtml = tmpl_content.format(
+        content=pretty_content,
+        isvim=keymap[1],
+        keymap=keymap[0],
+        mode="htmlmixed",
+        theme=selectedtheme,
+        unique_string=unique_string
+    )
     d = MyDialog(None, bodyhtml, win_title, js_save_cmd)
     # exec_() doesn't work - jseditor isn't loaded = blocked
     # finished.connect via https://stackoverflow.com/questions/39638749/
