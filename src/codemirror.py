@@ -286,29 +286,6 @@ class MyDialog(QDialog):
         return resultDict["res"]
 
 
-# overwrite built-in function
-# so that also the menu is changed
-# def onHtmlEdit(self):
-#     field = self.currentField
-#     contents = self.note.fields[field]
-
-#     shellfilename = "shell_codemirror.html"
-#     win_title = 'Anki - edit html source code for field in codemirror'
-#     js_save_cmd = "editor.getValue()"
-
-#     soup = bs4.BeautifulSoup(contents,"html.parser")
-#     contents = soup.prettify()
-#     path = os.path.dirname(os.path.realpath(__file__))
-#     htmlfile = os.path.join(path,shellfilename)
-#     with open(htmlfile) as f:
-#         h = f.read()
-#     html = h % (contents)
-#     d = MyDialog(None, self, html, field,win_title,js_save_cmd)
-#     d.show()
-# Editor.onHtmlEdit = onHtmlEdit
-Editor.original_onHtmlEdit = Editor.onHtmlEdit
-
-
 open_space_open = re.compile('(<[^/>]+>) (<[^/>]+>)')
 close_space_close = re.compile('(</[^>]+>) (</)')
 open_space_text = re.compile('(<[^/>]+>) ([^<>]+)')
@@ -316,43 +293,8 @@ open_text_close = re.compile('(<[^/>]+>) ([^<>]+) (</)')
 tag_space_punc = re.compile('(>) ([.,:;])')
 
 
-# from https://ankiweb.net/shared/info/410936778, doesn't work with syntax highlighted code
-# def postprocess(s):
-#     """Collapse pretty printed HTML, keeping somewhat sensible white space.
-
-#     Beautiful Soup replaces any spacing around tags with newlines and
-#     indentation. A naive function that attempts to reverse this by
-#     collapsing the newlines and indentation into a single white space
-#     will leave spurious spaces around tags. On the other hand, some of
-#     this white space is essential both semantically and for readability.
-#     We attempt to reach a sane compromise via these transformations:
-
-#     - <span> text </span> => <span>text</span>
-#     - <span> text         => <span>text
-#     - <span> <span>       => <span><span>
-#     - </span> </span>     => </span></span>
-#     - <span> ,            => <span>,
-#     - </span> ,           => </span>,
-#     """
-#     # this breaks syntax highlighted code, see http://pygments.org/docs/formatters/#HtmlFormatter
-#     # lineseparator "defaults to "\n", which is enough to break a line inside <pre> tags"
-#     # This line removes those "\n". Workaround: "you can e.g. set it to "<br>" to get HTML
-#     # line breaks."
-#     s = re.sub('\n', ' ', s)
-#     # the rest still kills whitespace so that all lines are unindented.
-#     # Don't use this
-#     s = re.sub('[ ]+', ' ', s)
-#     new = s
-#     while True:
-#         new = open_text_close.sub('\\1\\2\\3', new)
-#         new = open_space_text.sub('\\1\\2', new)
-#         new = open_space_open.sub('\\1\\2', new)
-#         new = close_space_close.sub('\\1\\2', new)
-#         new = tag_space_punc.sub('\\1\\2', new)
-#         if new == s:
-#             break
-#         s = new
-#     return s
+# the function postprocess from https://ankiweb.net/shared/info/410936778 
+# doesn't work with syntax highlighted code
 
 
 def postprocess(s):
@@ -530,17 +472,17 @@ def _cm_start_dialog(self, field):
 Editor._cm_start_dialog = _cm_start_dialog
 
 
-def cm_start_dialog2(self, field):
+def cm_start_dialog_helper(self, field):
     self.original_cm_text = self.note.fields[field]
     self.cm_field = field
     self.cm_nid = self.note.id
     self.web.eval("""setFormat("insertText", "%s");""" % unique_string)
     self.saveNow(lambda: self._cm_start_dialog(field))
-Editor.cm_start_dialog2 = cm_start_dialog2
+Editor.cm_start_dialog_helper = cm_start_dialog_helper
 
 
 def cm_start_dialog(self, field):
-    self.saveNow(lambda: self.cm_start_dialog2(field))
+    self.saveNow(lambda: self.cm_start_dialog_helper(field))
 Editor.cm_start_dialog = cm_start_dialog
 
 
