@@ -546,3 +546,75 @@ if gc("with_button", True):
     addHook("setupEditorButtons", setupEditorButtonsFilter)
 else:
     Editor.setupShortcuts = wrap(Editor.setupShortcuts, mySetupShortcuts)
+
+
+
+
+
+from aqt.clayout import CardLayout
+
+
+def on_CMdialog_finished(self, status):
+    if status:
+        # edited_fieldcontent is global var set in MyDialog class.
+        # unique string is used so that I find the cursor position in CM. Useless here.
+        self.textedit_in_cm.setPlainText(edited_fieldcontent.replace(unique_string, ""))  
+CardLayout.on_CMdialog_finished = on_CMdialog_finished
+
+
+def on_external_edit(self, textedit):
+    self.textedit_in_cm = textedit
+    tmpl_content = readfile()
+    win_title = 'Anki - edit html source code for field in codemirror'
+    js_save_cmd = "editor.getValue()"
+    bodyhtml = tmpl_content.format(
+        content=textedit.toPlainText(),
+        isvim=keymap[1],
+        keymap=keymap[0],
+        mode="css",
+        theme=selectedtheme,
+        unique_string=unique_string
+    )
+    d = MyDialog(None, bodyhtml, win_title, js_save_cmd)
+    # exec_() doesn't work - jseditor isn't loaded = blocked
+    # finished.connect via https://stackoverflow.com/questions/39638749/
+    d.finished.connect(self.on_CMdialog_finished)
+    d.setModal(True)
+    d.show()
+    d.web.setFocus()
+CardLayout.on_external_edit = on_external_edit
+
+
+def make_context_menu_front(self, location):
+    menu = self.tform.front.createStandardContextMenu()
+    sla = menu.addAction("edit in extra window with html/css editor")
+    sla.triggered.connect(lambda _, s=self: on_external_edit(s, self.tform.front))
+    menu.exec_(QCursor.pos())
+CardLayout.make_context_menu_front = make_context_menu_front
+
+
+def make_context_menu_css(self, location):
+    menu = self.tform.front.createStandardContextMenu()
+    sla = menu.addAction("edit in extra window with html/css editor")
+    sla.triggered.connect(lambda _, s=self: on_external_edit(s, self.tform.css))
+    menu.exec_(QCursor.pos())
+CardLayout.make_context_menu_css = make_context_menu_css
+
+
+def make_context_menu_back(self, location):
+    menu = self.tform.front.createStandardContextMenu()
+    sla = menu.addAction("edit in extra window with html/css editor")
+    sla.triggered.connect(lambda _, s=self: on_external_edit(s, self.tform.back))
+    menu.exec_(QCursor.pos())
+CardLayout.make_context_menu_back = make_context_menu_back
+
+
+def additional_clayout_setup(self):
+    # https://stackoverflow.com/a/44770024
+    self.tform.front.setContextMenuPolicy(Qt.CustomContextMenu)
+    self.tform.front.customContextMenuRequested.connect(self.make_context_menu_front)
+    self.tform.css.setContextMenuPolicy(Qt.CustomContextMenu)
+    self.tform.css.customContextMenuRequested.connect(self.make_context_menu_css)
+    self.tform.back.setContextMenuPolicy(Qt.CustomContextMenu)
+    self.tform.back.customContextMenuRequested.connect(self.make_context_menu_back)
+CardLayout.setupMainArea = wrap(CardLayout.setupMainArea, additional_clayout_setup)
