@@ -1,9 +1,24 @@
-This add-on loads the html source code into a <a href="https://codemirror.net/" rel="nofollow">codemirror</a> instance. 
+This add-on is an editor for html or css source code using a <a href="https://codemirror.net/" rel="nofollow">codemirror</a> instance. 
 
-<img src="https://raw.githubusercontent.com/ijgnd/anki__editor_edit_html_extended/master/screenshots/screenshot_3.png"> 
+This editor offers syntax highlighting and a built-in search. You can adjust the <a href="https://codemirror.net/demo/theme.html" rel="nofollow">theme</a> and key layout it uses ("sublime","emacs","vim"). 
 
-This add-on offers syntax highlighting and a built-in search. You can adjust the <a href="https://codemirror.net/demo/theme.html" rel="nofollow">theme</a> and key layout it uses ("sublime","emacs","vim").  
+This editor is used for two functions: 
 
+1. In the anki editor you can edit the source code of a field:
+<img src="https://raw.githubusercontent.com/ijgnd/anki__editor_edit_html_extended/master/screenshots/field.png"> 
+
+2. You can edit the Front Template, Styling, or Back Template in the Card Layout window. There's an additional entry in the context menu when you right-click on of those fields.
+<img src="https://raw.githubusercontent.com/ijgnd/anki__editor_edit_html_extended/master/screenshots/clayout.png"> 
+
+When you edit in the Card Layout window you can also save a version and then later compare it (or restore with copy and paste). 
+
+The dialog that lists versions (on the left in the following window) has a dropdown menu that lists all saved versions of the form you edit. Under the dropdown menu you have a simple preview of this saved version.
+On the top right of this versions window there's a button "open folder" which shows the folder that contains the saved versions in your file explorer.
+On the lower left there's a button "Diff with current" that diffs what you have in the extended editor and what you selected in the dropdown menu in an external program. The latter option requires that you adjust the add-on config.
+<img src="https://raw.githubusercontent.com/ijgnd/anki__editor_edit_html_extended/master/screenshots/clayout_with_prior_versions_markup.png"> 
+
+
+<b># Editing a field</b>
 By default it makes the source code more readable by using the function prettify of the python package beautifulsoup. You can also use functions from luoliyan's recent great add-on <a href="https://ankiweb.net/shared/info/410936778" rel="nofollow">HTML Editor Tweaks</a>. After closing it tries to minify the source code with 
 <a href="https://github.com/mankyd/htmlmin" rel="nofollow">htmlmin</a> (configurable).
 
@@ -11,15 +26,17 @@ If you click the add-on button while holding the shift-key you revert the field 
 
 When you open the window the cursor position is synced by reusing code from glutanimate's <a href="https://ankiweb.net/shared/info/138856093" rel="nofollow">Sync Cursor Between Fields and HTML Editor</a>. When you close the window the cursor is not synced.
 
-add-on offers syntax highlighting and a built-in search. You can adjust the <a href="https://codemirror.net/demo/theme.html" rel="nofollow">theme</a> and key layout it uses ("sublime","emacs","vim") .  
-
-This add-on loads a webpage. On my computer I don't notice a speed difference. But it your computer is slow or you put thousands of words into a field (as in incremental reading) it will be slower. In this case (and maybe in general) just use the other add-on or another add-on that loads the field source code directly into your editor of choice ...
+<b># Limitations</b>
+This add-on loads a webpage. On my computer I don't notice a speed difference. But it your computer is slow or you put thousands of words into a field (as in incremental reading) it will be slower.
 
 This add-on doesn't replace the built-in html view but uses it's own shortcut that you can adjust. 
 
-Use it at your own risk. This add-on also reuses another function luoliyan's add-on for folding the html after you finished editing. So the warning from <a href="https://ankiweb.net/shared/info/410936778" rel="nofollow">HTML Editor Tweaks</a> also applies here. No support, but if you find a bug let me know on <a href="https://github.com/ijgnd/anki__editor_edit_html_extended" rel="nofollow">github</a> - maybe I'll have an idea. Also pull requests, improvements and feedback is welcome. 
+Use it at your own risk. This add-on also optionally reuses another function from  luoliyan's add-on for folding the html after you finished editing. So the warning from <a href="https://ankiweb.net/shared/info/410936778" rel="nofollow">HTML Editor Tweaks</a> also applies here. 
 
-<b> some useful keycombos for the default keymap</b>:
+<b># bugs</b>
+No support, if you find a bug let me know on <a href="https://github.com/ijgnd/anki__editor_edit_html_extended" rel="nofollow">github</a> - maybe I'll have an idea. Also pull requests, improvements and feedback is welcome. 
+
+<b># some useful keycombos for the default keymap</b>:
 - "Esc": Close window, discard changes
 - "Ctrl+F": Find
 - "Ctrl-H": Replace
@@ -28,7 +45,9 @@ Use it at your own risk. This add-on also reuses another function luoliyan's add
 - "Ctrl-F3": search for word under cursor (findUnderNext)
 - "Shift-Ctrl-F3": search for word under cursor backwards (findUnderPrevious)
 
-<b> Versions</b>
+<b># Versions</b>
+- 2019-11-24 add save/diff when in card layout dialog
+- 2019-11-23 card layout dialog
 - 2019-10-28 minify with htmlmin to destroy less formatting, sync cursor when opening, highlight active line
 - 2019-06-10 first release
 
