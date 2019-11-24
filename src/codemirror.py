@@ -99,26 +99,37 @@ covered by the following copyright and permission notice:
 """
 
 
-import os
-import bs4
-import warnings
+import datetime
 import io
+import os
+import pathlib
+from pprint import pprint as pp
 import re
+import subprocess
+from tempfile import NamedTemporaryFile
+import warnings
 
+import bs4
+
+from anki.hooks import addHook, wrap
+from anki.utils import isWin, isMac
 from aqt import mw
 from aqt.qt import *
 from aqt.editor import Editor
 from aqt.webview import AnkiWebView
-from anki.hooks import addHook, wrap
-from aqt.utils import askUser, showInfo
-
-from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWebEngineWidgets import QWebEngineView
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QDialogButtonBox
-from PyQt5.QtCore import Qt, QMetaObject
-
+from aqt.utils import (
+    askUser,
+    restoreGeom,
+    saveGeom,
+    showInfo,
+    tooltip,
+    openFolder
+)
 
 from .htmlmin import Minifier
+
+from .forms import edit_window
+from .forms import versions
 
 
 def gc(arg, fail=False):
@@ -221,31 +232,146 @@ class MyWebView(AnkiWebView):
             return '<link rel="stylesheet" type="text/css" href="%s">' % self.webBundlePath(fname)
 
 
+def now():
+    CurrentDT=datetime.datetime.now()
+    return CurrentDT.strftime("%Y-%m-%d___%H-%M-%S")
+
+
+class OldVersions(QDialog):
+    def __init__(self, parent, note, boxname, folder, currContent):
+        QDialog.__init__(self, parent, Qt.Window)
+        self.parent = parent
+        self.note = note
+        self.boxname = boxname
+        self.folder = folder
+        self.currContent = currContent
+        self.versions = sorted(os.listdir(self.folder), reverse=True)
+        self.model = self.note.model()
+        self.dialog = versions.Ui_Dialog()
+        self.dialog.setupUi(self)
+        restoreGeom(self, "1043915942_OldVersions")
+        self.setWindowTitle("Anki - manage prior versions of this card template element")
+        self.dialog.pb_folder.clicked.connect(self.openFolder)
+        self.dialog.pb_diff.clicked.connect(self.onDiff)
+        self.dialog.textEdit.setReadOnly(True)
+        self.setupCombo()
+
+    def setupCombo(self):
+        self.dialog.comboBox.currentIndexChanged.connect(self.updateTextEdit)
+        for f in self.versions:
+            self.dialog.comboBox.addItem(f)
+        self.updateTextEdit()
+
+    def updateTextEdit(self):
+        i = self.dialog.comboBox.currentIndex()
+        with open(os.path.join(self.folder, self.versions[i])) as f:
+            content = f.read()
+        self.dialog.textEdit.setPlainText(content)
+
+    def openFolder(self):
+        openFolder(self.folder)
+
+    def onDiff(self):
+        try:
+            old = self.versions[i]
+        except:
+            tooltip('no saved versions for the "{}" of this model found. Aborting...'.format(
+                self.boxname))
+        oldabs = os.path.join(self.folder, old)
+
+        if self.boxname == "css":
+            ext = ".css"
+        else:
+            ext = ".html"
+        suf = "current" + ext
+        cur = NamedTemporaryFile(delete=False, suffix=suf)
+        cur.write(str.encode(self.currContent))
+        cur.close()
+        i = self.dialog.comboBox.currentIndex()
+
+        cmd = gc("diffcommandstart")
+        if not isinstance(cmd, list):
+            tooltip("Invalid settings for 'diffcommand'. Must be a list. Aborting ...")
+            return
+        cmd.extend([cur.name, oldabs])
+        if isWin:
+            subprocess.Popen(cmd)
+        else:
+            subprocess.Popen(cmd) 
+
+    def reject(self):
+        saveGeom(self, "1043915942_OldVersions")
+        QDialog.reject(self)
+
+
 class MyDialog(QDialog):
-    def __init__(self, parent, bodyhtml, win_title="", js_save_cmd=""):
+    def __init__(self, parent, bodyhtml, win_title, js_save_cmd, isfield, boxname, note):
         super(MyDialog, self).__init__(parent)
+        self.parent = parent
+        self.note = note
+        self.model = self.note.model()
+        self.boxname = boxname
         self.js_save_cmd = js_save_cmd
         self.setWindowTitle(win_title)
-        self.resize(gc("default_width", 790), gc("default_height", 1100))
-        mainLayout = QVBoxLayout()
-        mainLayout.setContentsMargins(0, 0, 0, 0)
-        mainLayout.setSpacing(0)
-        self.setLayout(mainLayout)
+        self.dialog = edit_window.Ui_Dialog()
+        self.dialog.setupUi(self)
+        self.dialog.outer.setContentsMargins(0, 0, 0, 0)
+        self.dialog.outer.setSpacing(0)
+        if isfield:
+            self.dialog.wid_buts.setVisible(False)
         self.web = MyWebView(self)
-        self.web.title = "html source with codemirror"
-
-        self.web.contextMenuEvent = self.contextMenuEvent
-        mainLayout.addWidget(self.web)
-        self.buttonBox = QDialogButtonBox(self)
-        self.buttonBox.setOrientation(Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel | QDialogButtonBox.Save)
-        mainLayout.addWidget(self.buttonBox)
-        self.buttonBox.accepted.connect(self.onAccept)
-        self.buttonBox.rejected.connect(self.onReject)
-        QMetaObject.connectSlotsByName(self)
+        self.dialog.outer.addWidget(self.web)
+        qsp = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        qsp.setVerticalStretch(2)
+        self.web.setSizePolicy(qsp)
         acceptShortcut = QShortcut(QKeySequence("Ctrl+Return"), self)
         acceptShortcut.activated.connect(self.onAccept)
+        self.web.title = "html source with codemirror"
+        self.web.contextMenuEvent = self.contextMenuEvent
         self.web.stdHtml(bodyhtml, cssfiles, jsfiles)
+        self.dialog.pb_save.clicked.connect(self.onSave)
+        self.dialog.pb_viewold.clicked.connect(self.onView)
+        restoreGeom(self, "1043915942_MyDialog")
+
+    def template_save_path(self):
+        base = os.path.join(addon_path, "user_files")
+        if gc("backup_template_path"):
+            user = gc("backup_template_path")
+            if os.path.isdir(base):
+                base = user
+            else:
+                tooltip('Invalid setting for "backup_template_path". This is not a directory. '
+                        'Using default path in add-on folder')
+        # don't use model['name'] in case a user renames a template ...
+        return os.path.join(base, str(self.model['id']), self.boxname)
+
+    def onSave(self):
+        if self.boxname:
+            self.onTemplateSave()
+        else:
+            pass
+
+    def onTemplateSave(self):
+        content = self.__execJavaScript(self.js_save_cmd)
+        if self.boxname == "css":
+            ext = ".css"
+        else:
+            ext = ".html"
+        folder = self.template_save_path()
+        filename = now() + ext
+        pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
+        with open(os.path.join(folder, filename), "w") as f:
+            f.write(content)
+            tooltip('saved as {}'.format(filename))
+
+    def onView(self):
+        currContent = self.__execJavaScript(self.js_save_cmd)
+        d = OldVersions(self, self.note, self.boxname, self.template_save_path(), currContent)
+        if d.exec():
+            pass
+
+    def accept(self):
+        self.onAccept()
 
     def onAccept(self):
         global edited_fieldcontent
@@ -253,17 +379,19 @@ class MyDialog(QDialog):
         s = """insertTextAtCursor('%s')""" % unique_string
         self.__execJavaScript(s)
         edited_fieldcontent = self.__execJavaScript(self.js_save_cmd)
-        self.accept()
+        QDialog.accept(self)
 
     def onReject(self):
         ok = askUser("Close and discard changes?")
         if ok:
+            saveGeom(self, "1043915942_MyDialog")
             self.reject()
 
     def closeEvent(self, event):
         ok = askUser("Close and discard changes?")
         if ok:
             event.ignore()
+            saveGeom(self, "1043915942_MyDialog")
             self.reject()
         else:
             event.ignore()
@@ -469,7 +597,7 @@ def _cm_start_dialog(self, field):
         unique_string=unique_string,
         lint="true"
     )
-    d = MyDialog(None, bodyhtml, win_title, js_save_cmd)
+    d = MyDialog(None, bodyhtml, win_title, js_save_cmd, True, False, self.note)
     # exec_() doesn't work - jseditor isn't loaded = blocked
     # finished.connect via https://stackoverflow.com/questions/39638749/
     d.finished.connect(self.on_CMdialog_finished)
@@ -569,7 +697,7 @@ def on_CMdialog_finished(self, status):
 CardLayout.on_CMdialog_finished = on_CMdialog_finished
 
 
-def on_external_edit(self, textedit):
+def on_external_edit(self, boxname, textedit):
     self.textedit_in_cm = textedit
     tmpl_content = readfile()
     win_title = 'Anki - edit html source code for field in codemirror'
@@ -583,7 +711,7 @@ def on_external_edit(self, textedit):
         unique_string=unique_string,
         lint="true"
     )
-    d = MyDialog(None, bodyhtml, win_title, js_save_cmd)
+    d = MyDialog(None, bodyhtml, win_title, js_save_cmd, False, boxname, self.note)
     # exec_() doesn't work - jseditor isn't loaded = blocked
     # finished.connect via https://stackoverflow.com/questions/39638749/
     d.finished.connect(self.on_CMdialog_finished)
@@ -596,7 +724,7 @@ CardLayout.on_external_edit = on_external_edit
 def make_context_menu_front(self, location):
     menu = self.tform.front.createStandardContextMenu()
     sla = menu.addAction("edit in extra window with html/css editor")
-    sla.triggered.connect(lambda _, s=self: on_external_edit(s, self.tform.front))
+    sla.triggered.connect(lambda _, s=self: on_external_edit(s, "front", self.tform.front))
     menu.exec_(QCursor.pos())
 CardLayout.make_context_menu_front = make_context_menu_front
 
@@ -604,7 +732,7 @@ CardLayout.make_context_menu_front = make_context_menu_front
 def make_context_menu_css(self, location):
     menu = self.tform.front.createStandardContextMenu()
     sla = menu.addAction("edit in extra window with html/css editor")
-    sla.triggered.connect(lambda _, s=self: on_external_edit(s, self.tform.css))
+    sla.triggered.connect(lambda _, s=self: on_external_edit(s, "css", self.tform.css))
     menu.exec_(QCursor.pos())
 CardLayout.make_context_menu_css = make_context_menu_css
 
@@ -612,7 +740,7 @@ CardLayout.make_context_menu_css = make_context_menu_css
 def make_context_menu_back(self, location):
     menu = self.tform.front.createStandardContextMenu()
     sla = menu.addAction("edit in extra window with html/css editor")
-    sla.triggered.connect(lambda _, s=self: on_external_edit(s, self.tform.back))
+    sla.triggered.connect(lambda _, s=self: on_external_edit(s, "back", self.tform.back))
     menu.exec_(QCursor.pos())
 CardLayout.make_context_menu_back = make_context_menu_back
 
