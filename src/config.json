@@ -6,6 +6,6 @@
     "hotkey_codemirror":"Ctrl+Shift+Y",
     "keymap":"sublime",
     "theme":"xq-light",
-    "with_button":true
+    "editor_menu_show_button":true,
 }
  

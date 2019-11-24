@@ -549,7 +549,7 @@ def mySetupShortcuts(self):
         QShortcut(QKeySequence(keys), self.widget, activated=fn)
 
 
-if gc("with_button", True):
+if gc("editor_menu_show_button", True):
     addHook("setupEditorButtons", setupEditorButtonsFilter)
 else:
     Editor.setupShortcuts = wrap(Editor.setupShortcuts, mySetupShortcuts)
