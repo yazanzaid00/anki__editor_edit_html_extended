@@ -166,6 +166,7 @@ keymappath = "codemirror/keymap/" + keymap[0] + ".js"
 
 
 addon_cssfiles = ["codemirror/lib/codemirror.css",
+                  "codemirror/addon/lint/lint.css",
                   "codemirror/addon/dialog/dialog.css",
                   "codemirror/addon/search/matchesonscrollbar.css",
                   "codemirror/lib/codemirror.css",
@@ -195,6 +196,11 @@ addon_jsfiles = ["codemirror/lib/codemirror.js",
                  "codemirror/addon/wrap/hardwrap.js",
                  "codemirror/addon/fold/foldcode.js",
                  "codemirror/addon/fold/brace-fold.js",
+                 "codemirror/addon/lint/lint.js",
+                 "codemirror/addon/lint/javascript-lint.js",
+                 "codemirror/addon/lint/json-lint.js",
+                 "codemirror/addon/lint/html-lint.js",
+                 "codemirror/addon/lint/css-lint.js",
                  ]
 
 other_jsfiles = ["jquery.js", ]
@@ -460,7 +466,8 @@ def _cm_start_dialog(self, field):
         keymap=keymap[0],
         mode="htmlmixed",
         theme=selectedtheme,
-        unique_string=unique_string
+        unique_string=unique_string,
+        lint="true"
     )
     d = MyDialog(None, bodyhtml, win_title, js_save_cmd)
     # exec_() doesn't work - jseditor isn't loaded = blocked
@@ -573,7 +580,8 @@ def on_external_edit(self, textedit):
         keymap=keymap[0],
         mode="css",
         theme=selectedtheme,
-        unique_string=unique_string
+        unique_string=unique_string,
+        lint="true"
     )
     d = MyDialog(None, bodyhtml, win_title, js_save_cmd)
     # exec_() doesn't work - jseditor isn't loaded = blocked

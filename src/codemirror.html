@@ -40,7 +40,9 @@ function toggleCheckbox(){{
         viewportMargin: Infinity,  // https://codemirror.net/demo/resize.html
         tabSize: 4,
         mode: "{mode}",
-        theme: "{theme}"
+        theme: "{theme}",
+        gutters: ["CodeMirror-lint-markers"],
+        lint: "{lint}"
     }});
     // editor.setSize($(window).width(),$(window).height()-30);   // overrides CSS - https://codemirror.net/doc/manual.html
     let cursor = editor.getSearchCursor('{unique_string}');
