@@ -144,7 +144,10 @@ from .forms import versions
 
 
 def gc(arg, fail=False):
-    return mw.addonManager.getConfig(__name__).get(arg, fail)
+    conf = mw.addonManager.getConfig(__name__)
+    if conf:
+        return conf.get(arg, fail)
+    return fail
 
 
 addon_path = os.path.dirname(__file__)
