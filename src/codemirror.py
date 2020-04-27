@@ -6,10 +6,9 @@ Copyright (c) 2019 ignd
               https://github.com/luoliyan/anki-misc/blob/master/html-editor-tweaks/__init__.py
               https://ankiweb.net/shared/info/410936778
           (c) 2013, Dave Mankoff
-          (c) 2014 - 2016 Detlev Offenbach
-              <detlev@die-offenbachs.de> (the function __execJavaScript)
           (c) 2017 Glutanimate
           (c) Ankitects Pty Ltd and contributors
+
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as
@@ -25,49 +24,60 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+
+This add-on bundles the file "sync_execJavaScript.py" which has this copyright and permission
+notice: 
+
+    Copyright: 2014 - 2016 Detlev Offenbach <detlev@die-offenbachs.de>
+                  (taken from https://github.com/pycom/EricShort/blob/master/UI/Previewers/PreviewerHTML.py)
+    License: GPLv3 or later, https://github.com/pycom/EricShort/blob/025a9933bdbe92f6ff1c30805077c59774fa64ab/LICENSE.GPL3
+
+
+
 This file incorporates work (i.e. the function postprocess and reindent)
 covered by the following copyright and permission notice:
-#
-# Copyright © 2019 Joseph Lorimer <joseph@lorimer.me>
-#
-# Permission to use, copy, modify, and distribute this software for any
-# purpose with or without fee is hereby granted, provided that the above
-# copyright notice and this permission notice appear in all copies.
-#
-# THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
-# WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-# MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
-# ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-# WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
-# ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
-# OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+    Copyright © 2019 Joseph Lorimer <joseph@lorimer.me>
+
+    Permission to use, copy, modify, and distribute this software for any
+    purpose with or without fee is hereby granted, provided that the above
+    copyright notice and this permission notice appear in all copies.
+
+    THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+    WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+    MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+    ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+    WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+    ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+    OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 
 
-This file make Anki load the js package codemirror, http://codemirror.net/,
+This add-on bundles and  makes Anki load the js package codemirror, http://codemirror.net/,
 which includes this LICENSE file:
 
-MIT License
+    MIT License
 
-Copyright (C) 2017 by Marijn Haverbeke <marijnh@gmail.com> and others
+    Copyright (C) 2017 by Marijn Haverbeke <marijnh@gmail.com> and others
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+    Permission is hereby granted, free of charge, to any person obtaining a copy
+    of this software and associated documentation files (the "Software"), to deal
+    in the Software without restriction, including without limitation the rights
+    to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+    copies of the Software, and to permit persons to whom the Software is
+    furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
+    The above copyright notice and this permission notice shall be included in
+    all copies or substantial portions of the Software.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
+    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+    IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+    FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+    AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+    LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+    OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+    THE SOFTWARE.
+
 
 
 This addon bundles parts of the htmlmin package, https://github.com/mankyd/htmlmin,
@@ -127,6 +137,7 @@ from aqt.utils import (
 )
 
 from .htmlmin import Minifier
+from .sync_execJavaScript import sync_execJavaScript
 
 from .forms import edit_window
 from .forms import versions
@@ -272,6 +283,7 @@ class OldVersions(QDialog):
         openFolder(self.folder)
 
     def onDiff(self):
+        i = self.dialog.comboBox.currentIndex()
         try:
             old = self.versions[i]
         except:
@@ -287,7 +299,6 @@ class OldVersions(QDialog):
         cur = NamedTemporaryFile(delete=False, suffix=suf)
         cur.write(str.encode(self.currContent))
         cur.close()
-        i = self.dialog.comboBox.currentIndex()
 
         cmd = gc("diffcommandstart")
         if not isinstance(cmd, list):
@@ -333,40 +344,43 @@ class MyDialog(QDialog):
         self.dialog.pb_viewold.clicked.connect(self.onView)
         restoreGeom(self, "1043915942_MyDialog")
 
-    def template_save_path(self):
-        base = os.path.join(addon_path, "user_files")
-        if gc("backup_template_path"):
-            user = gc("backup_template_path")
-            if os.path.isdir(base):
-                base = user
-            else:
-                tooltip('Invalid setting for "backup_template_path". This is not a directory. '
-                        'Using default path in add-on folder')
-        # don't use model['name'] in case a user renames a template ...
-        return os.path.join(base, str(self.model['id']), self.boxname)
-
     def onSave(self):
         if self.boxname:
             self.onTemplateSave()
         else:
             pass
 
+    # maybe relevant for editor?
+    # def template_save_path(self):
+    #     base = os.path.join(addon_path, "user_files")
+    #     if gc("backup_template_path"):
+    #         user = gc("backup_template_path")
+    #         if os.path.isdir(base):
+    #             base = user
+    #         else:
+    #             tooltip('Invalid setting for "backup_template_path". This is not a directory. '
+    #                     'Using default path in add-on folder')
+    #     # don't use model['name'] in case a user renames a template ...
+    #     return os.path.join(base, str(self.model['id']), self.boxname)
+
     def onTemplateSave(self):
         content = self.__execJavaScript(self.js_save_cmd)
-        if self.boxname == "css":
-            ext = ".css"
-        else:
-            ext = ".html"
-        folder = self.template_save_path()
-        filename = now() + ext
-        pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
-        with open(os.path.join(folder, filename), "w") as f:
-            f.write(content)
-            tooltip('saved as {}'.format(filename))
+        self.parent.saveStringForBox(self.boxname, content)
+    # maybe reintrodue as as class  
+    #     if self.boxname == "css":
+    #         ext = ".css"
+    #     else:
+    #         ext = ".html"
+    #     folder = self.template_save_path()
+    #     filename = now() + ext
+    #     pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
+    #     with open(os.path.join(folder, filename), "w") as f:
+    #         f.write(content)
+    #         tooltip('saved as {}'.format(filename))
 
     def onView(self):
         currContent = self.__execJavaScript(self.js_save_cmd)
-        d = OldVersions(self, self.note, self.boxname, self.template_save_path(), currContent)
+        d = OldVersions(self, self.note, self.boxname, self.parent.template_save_path(self.boxname), currContent)
         if d.exec():
             pass
 
@@ -396,28 +410,8 @@ class MyDialog(QDialog):
         else:
             event.ignore()
 
-    # via https://riverbankcomputing.com/pipermail/pyqt/2016-May/037449.html
-    # https://github.com/pycom/EricShort/blob/master/UI/Previewers/PreviewerHTML.py
     def __execJavaScript(self, script):
-        """
-        Private function to execute a JavaScript function Synchroneously.
-        @param script JavaScript script source to be executed
-        @type str
-        @return result of the script
-        @rtype depending upon script result
-        """
-        from PyQt5.QtCore import QEventLoop
-        loop = QEventLoop()
-        resultDict = {"res": None}
-
-        def resultCallback(res, resDict=resultDict):
-            if loop and loop.isRunning():
-                resDict["res"] = res
-                loop.quit()
-        self.web.page().runJavaScript(
-            script, resultCallback)
-        loop.exec_()
-        return resultDict["res"]
+        return sync_execJavaScript(self.web, script)
 
 
 open_space_open = re.compile('(<[^/>]+>) (<[^/>]+>)')
@@ -689,6 +683,72 @@ else:
 from aqt.clayout import CardLayout
 
 
+def template_save_path(self, boxname):
+    base = os.path.join(addon_path, "user_files")
+    if gc("backup_template_path"):
+        user = gc("backup_template_path")
+        if os.path.isdir(base):
+            base = user
+        else:
+            tooltip('Invalid setting for "backup_template_path". This is not a directory. '
+                    'Using default path in add-on folder')
+    # don't use model['name'] in case a user renames a template ...
+    return os.path.join(base, str(self.model['id']), boxname)
+CardLayout.template_save_path = template_save_path
+
+
+def save_clear_editExternal(self, box, tedit):
+    self.onTemplateSave(box, tedit)
+    content = tedit.toPlainText()
+    tedit.setPlainText("")
+    if box == "css":
+        ext = ".css"
+    else:
+        ext = ".html"
+    suf = "current" + ext
+    cur = NamedTemporaryFile(delete=False, suffix=suf)
+    cur.write(str.encode(content))
+    cur.close()
+    cmd = gc("diffcommandstart")
+    subprocess.Popen([cmd[0], cur.name]) 
+CardLayout.save_clear_editExternal = save_clear_editExternal
+
+
+def extra_dialog(self, box, tedit):
+    d = OldVersions(self, self.note, box, self.template_save_path(box), tedit.toPlainText())
+    d.exec()
+CardLayout.extra_dialog = extra_dialog
+
+
+def show_in_filemanager(self, box, tedit):
+    p = self.template_save_path(box)
+    if os.path.isdir(p):
+        openFolder(p)
+    else:
+        tooltip("folder not found. Maybe no version was saved yet ...")
+CardLayout.show_in_filemanager = show_in_filemanager
+
+
+def saveStringForBox(self, boxname, content):
+    if boxname == "css":
+        ext = ".css"
+    else:
+        ext = ".html"
+    folder = self.template_save_path(boxname)
+    filename = now() + ext
+    pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
+    with open(os.path.join(folder, filename), "w") as f:
+        f.write(content)
+        tooltip('saved as {}'.format(filename))
+CardLayout.saveStringForBox = saveStringForBox
+
+
+def onTemplateSave(self, boxname, tedit):
+    content = tedit.toPlainText()
+    self.saveStringForBox(boxname, content)
+CardLayout.onTemplateSave = onTemplateSave
+
+
 def on_CMdialog_finished(self, status):
     if status:
         # edited_fieldcontent is global var set in MyDialog class.
@@ -711,7 +771,7 @@ def on_external_edit(self, boxname, textedit):
         unique_string=unique_string,
         lint="true"
     )
-    d = MyDialog(None, bodyhtml, win_title, js_save_cmd, False, boxname, self.note)
+    d = MyDialog(self, bodyhtml, win_title, js_save_cmd, False, boxname, self.note)
     # exec_() doesn't work - jseditor isn't loaded = blocked
     # finished.connect via https://stackoverflow.com/questions/39638749/
     d.finished.connect(self.on_CMdialog_finished)
@@ -721,26 +781,36 @@ def on_external_edit(self, boxname, textedit):
 CardLayout.on_external_edit = on_external_edit
 
 
-def make_context_menu_front(self, location):
-    menu = self.tform.front.createStandardContextMenu()
+def common_context_menu(self, tedit, box):
+    menu = tedit.createStandardContextMenu()
     sla = menu.addAction("edit in extra window with html/css editor")
-    sla.triggered.connect(lambda _, s=self: on_external_edit(s, "front", self.tform.front))
+    sla.triggered.connect(lambda _, s=self: on_external_edit(s, box, tedit))
+    sav = menu.addAction("save")
+    sav.triggered.connect(lambda _, s=self: onTemplateSave(s, box, tedit))
+    a = menu.addAction("prior versions extra dialog")
+    a.triggered.connect(lambda _, s=self: extra_dialog(s, box, tedit))
+    b = menu.addAction("prior versions in file manager")
+    b.triggered.connect(lambda _, s=self: show_in_filemanager(s, box, tedit))
+    c = menu.addAction("save, edit external and clear")
+    c.triggered.connect(lambda _, s=self: save_clear_editExternal(s, box, tedit))
+    return menu
+CardLayout.common_context_menu = common_context_menu
+
+
+def make_context_menu_front(self, location):
+    menu = self.common_context_menu(self.tform.front, "front")
     menu.exec_(QCursor.pos())
 CardLayout.make_context_menu_front = make_context_menu_front
 
 
 def make_context_menu_css(self, location):
-    menu = self.tform.front.createStandardContextMenu()
-    sla = menu.addAction("edit in extra window with html/css editor")
-    sla.triggered.connect(lambda _, s=self: on_external_edit(s, "css", self.tform.css))
+    menu = self.common_context_menu(self.tform.css, "css")
     menu.exec_(QCursor.pos())
 CardLayout.make_context_menu_css = make_context_menu_css
 
 
 def make_context_menu_back(self, location):
-    menu = self.tform.front.createStandardContextMenu()
-    sla = menu.addAction("edit in extra window with html/css editor")
-    sla.triggered.connect(lambda _, s=self: on_external_edit(s, "back", self.tform.back))
+    menu = self.common_context_menu(self.tform.back, "back")
     menu.exec_(QCursor.pos())
 CardLayout.make_context_menu_back = make_context_menu_back
 
@@ -754,3 +824,4 @@ def additional_clayout_setup(self):
     self.tform.back.setContextMenuPolicy(Qt.CustomContextMenu)
     self.tform.back.customContextMenuRequested.connect(self.make_context_menu_back)
 CardLayout.setupMainArea = wrap(CardLayout.setupMainArea, additional_clayout_setup)
+            
