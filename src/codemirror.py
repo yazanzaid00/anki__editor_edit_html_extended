@@ -170,6 +170,13 @@ from .forms import edit_window
 from .forms import versions
 
 
+from anki import version as anki_version
+_, _, point = anki_version.split(".")
+pointversion = int(point)
+
+
+
+
 def gc(arg, fail=False):
     conf = mw.addonManager.getConfig(__name__)
     if conf:
@@ -848,47 +855,98 @@ def on_external_edit(self, boxname, textedit):
 CardLayout.on_external_edit = on_external_edit
 
 
-def common_context_menu(self, tedit, box):
-    menu = tedit.createStandardContextMenu()
-    sla = menu.addAction("edit in extra window with html/css editor")
-    sla.triggered.connect(lambda _, s=self: on_external_edit(s, box, tedit))
-    sav = menu.addAction("save")
-    sav.triggered.connect(lambda _, s=self: onTemplateSave(s, box, tedit))
-    a = menu.addAction("prior versions extra dialog")
-    a.triggered.connect(lambda _, s=self: extra_dialog(s, box, tedit))
-    b = menu.addAction("prior versions in file manager")
-    b.triggered.connect(lambda _, s=self: show_in_filemanager(s, box, tedit))
-    c = menu.addAction("save, edit external and clear")
-    c.triggered.connect(lambda _, s=self: save_clear_editExternal(s, box, tedit))
-    return menu
-CardLayout.common_context_menu = common_context_menu
 
 
-def make_context_menu_front(self, location):
-    menu = self.common_context_menu(self.tform.front, "front")
-    menu.exec_(QCursor.pos())
-CardLayout.make_context_menu_front = make_context_menu_front
 
 
-def make_context_menu_css(self, location):
-    menu = self.common_context_menu(self.tform.css, "css")
-    menu.exec_(QCursor.pos())
-CardLayout.make_context_menu_css = make_context_menu_css
 
 
-def make_context_menu_back(self, location):
-    menu = self.common_context_menu(self.tform.back, "back")
-    menu.exec_(QCursor.pos())
-CardLayout.make_context_menu_back = make_context_menu_back
 
 
-def additional_clayout_setup(self):
-    # https://stackoverflow.com/a/44770024
-    self.tform.front.setContextMenuPolicy(Qt.CustomContextMenu)
-    self.tform.front.customContextMenuRequested.connect(self.make_context_menu_front)
-    self.tform.css.setContextMenuPolicy(Qt.CustomContextMenu)
-    self.tform.css.customContextMenuRequested.connect(self.make_context_menu_css)
-    self.tform.back.setContextMenuPolicy(Qt.CustomContextMenu)
-    self.tform.back.customContextMenuRequested.connect(self.make_context_menu_back)
-CardLayout.setupMainArea = wrap(CardLayout.setupMainArea, additional_clayout_setup)
-            
+
+
+if pointversion < 27:
+    def common_context_menu(self, tedit, box):
+        menu = tedit.createStandardContextMenu()
+        sla = menu.addAction("edit in extra window with html/css editor")
+        sla.triggered.connect(lambda _, s=self: on_external_edit(s, box, tedit))
+        sav = menu.addAction("save")
+        sav.triggered.connect(lambda _, s=self: onTemplateSave(s, box, tedit))
+        a = menu.addAction("prior versions extra dialog")
+        a.triggered.connect(lambda _, s=self: extra_dialog(s, box, tedit))
+        b = menu.addAction("prior versions in file manager")
+        b.triggered.connect(lambda _, s=self: show_in_filemanager(s, box, tedit))
+        c = menu.addAction("save, edit external and clear")
+        c.triggered.connect(lambda _, s=self: save_clear_editExternal(s, box, tedit))
+        return menu
+    CardLayout.common_context_menu = common_context_menu
+
+
+    def make_context_menu_front(self, location):
+        menu = self.common_context_menu(self.tform.front, "front")
+        menu.exec_(QCursor.pos())
+    CardLayout.make_context_menu_front = make_context_menu_front
+
+
+    def make_context_menu_css(self, location):
+        menu = self.common_context_menu(self.tform.css, "css")
+        menu.exec_(QCursor.pos())
+    CardLayout.make_context_menu_css = make_context_menu_css
+
+
+    def make_context_menu_back(self, location):
+        menu = self.common_context_menu(self.tform.back, "back")
+        menu.exec_(QCursor.pos())
+    CardLayout.make_context_menu_back = make_context_menu_back
+
+
+    def additional_clayout_setup(self):
+        # https://stackoverflow.com/a/44770024
+        self.tform.front.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tform.front.customContextMenuRequested.connect(self.make_context_menu_front)
+        self.tform.css.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tform.css.customContextMenuRequested.connect(self.make_context_menu_css)
+        self.tform.back.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tform.back.customContextMenuRequested.connect(self.make_context_menu_back)
+    CardLayout.setupMainArea = wrap(CardLayout.setupMainArea, additional_clayout_setup)
+
+
+
+
+
+
+
+
+
+if pointversion >= 28:
+    def make_new_context_menu(self, location):
+        if self.tform.front_button.isChecked():
+            print('on front')
+            box = "front"
+        elif self.tform.back_button.isChecked():
+            print('on back')
+            box = "back"
+        else:
+            print('in css')
+            box = "css"
+        tedit = self.tform.edit_area
+        menu = tedit.createStandardContextMenu()
+        sla = menu.addAction("edit in extra window with html/css editor")
+        sla.triggered.connect(lambda _, s=self: on_external_edit(s, box, tedit))
+        sav = menu.addAction("save")
+        sav.triggered.connect(lambda _, s=self: onTemplateSave(s, box, tedit))
+        a = menu.addAction("prior versions extra dialog")
+        a.triggered.connect(lambda _, s=self: extra_dialog(s, box, tedit))
+        b = menu.addAction("prior versions in file manager")
+        b.triggered.connect(lambda _, s=self: show_in_filemanager(s, box, tedit))
+        c = menu.addAction("save, edit external and clear")
+        c.triggered.connect(lambda _, s=self: save_clear_editExternal(s, box, tedit))
+        menu.exec_(QCursor.pos())
+    CardLayout.make_new_context_menu = make_new_context_menu
+
+
+    def additional_clayout_setup(self):
+        # https://stackoverflow.com/a/44770024
+        self.tform.edit_area.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tform.edit_area.customContextMenuRequested.connect(self.make_new_context_menu)
+    CardLayout.setup_edit_area = wrap(CardLayout.setup_edit_area, additional_clayout_setup)
