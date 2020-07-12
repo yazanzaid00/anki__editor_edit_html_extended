@@ -344,10 +344,10 @@ class OldVersions(QDialog):
             tooltip("Invalid settings for 'diffcommand'. Must be a list. Aborting ...")
             return
         cmd.extend([cur.name, oldabs])
-        if isWin:
+        try:
             subprocess.Popen(cmd)
-        else:
-            subprocess.Popen(cmd) 
+        except:
+            tooltip("Error while trying to open the external editor. Maybe there's an error in your config.")
 
     def reject(self):
         saveGeom(self, "1043915942_OldVersions")
@@ -779,7 +779,11 @@ def save_clear_editExternal(self, box, tedit):
     cur.write(str.encode(content))
     cur.close()
     cmd = gc("diffcommandstart")
-    subprocess.Popen([cmd[0], cur.name]) 
+    try:
+        subprocess.Popen([cmd[0], cur.name])
+    except:
+        tooltip("Error while trying to open the external editor. Maybe there's an error in your config.")
+        tedit.setPlainText(content)
 CardLayout.save_clear_editExternal = save_clear_editExternal
 
 
