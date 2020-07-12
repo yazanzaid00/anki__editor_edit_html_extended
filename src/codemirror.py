@@ -579,11 +579,21 @@ def _onCMUpdateField(self):
     # bs4ed = bs4.BeautifulSoup(c, "html.parser")
     # ef_text = bs4ed.getText().replace('\n', ' ')
     # pos = len(ef_text.split(unique_string)[0])
+
+    # maybe this?
+    # if not self.addMode:
+    #     note.fields[self.myfield] = c
+    #     note.flush()
+    #     mw.requireReset()
+    #     mw.reset()
+    # else:
+    #     self.note.fields[self.myfield] = c.replace(unique_string, "")
+
     try:
         note = mw.col.getNote(self.nid)
     except:   # new note
         self.note.fields[self.myfield] = c.replace(unique_string, "")
-        self.note.flush()
+        # self.note.flush()  # doesn't work in 2.1.28
     else:
         note.fields[self.myfield] = c
         note.flush()
