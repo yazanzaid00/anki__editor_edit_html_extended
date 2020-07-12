@@ -124,7 +124,14 @@ import bs4
 from anki.hooks import addHook, wrap
 from anki.utils import isWin, isMac
 from aqt import mw
-from aqt.qt import *
+from aqt.qt import (
+    QCursor,
+    QDialog,
+    QKeySequence,
+    QShortcut,
+    QSizePolicy,
+    Qt,
+)
 from aqt.editor import Editor
 from aqt.webview import AnkiWebView
 from aqt.utils import (
@@ -152,7 +159,7 @@ def gc(arg, fail=False):
 
 addon_path = os.path.dirname(__file__)
 addonfoldername = os.path.basename(addon_path)
-regex = r"(web.*)"
+regex = r"(web[/\\].*)"
 mw.addonManager.setWebExports(__name__, regex)
 codemirror_path = "/_addons/%s/web/" % addonfoldername
 
@@ -278,7 +285,8 @@ class OldVersions(QDialog):
 
     def updateTextEdit(self):
         i = self.dialog.comboBox.currentIndex()
-        with open(os.path.join(self.folder, self.versions[i])) as f:
+        p = os.path.join(self.folder, self.versions[i])
+        with io.open(p, "r", encoding="utf-8") as f:
             content = f.read()
         self.dialog.textEdit.setPlainText(content)
 
@@ -369,17 +377,18 @@ class MyDialog(QDialog):
     def onTemplateSave(self):
         content = self.__execJavaScript(self.js_save_cmd)
         self.parent.saveStringForBox(self.boxname, content)
-    # maybe reintrodue as as class  
-    #     if self.boxname == "css":
-    #         ext = ".css"
-    #     else:
-    #         ext = ".html"
-    #     folder = self.template_save_path()
-    #     filename = now() + ext
-    #     pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
-    #     with open(os.path.join(folder, filename), "w") as f:
-    #         f.write(content)
-    #         tooltip('saved as {}'.format(filename))
+        # maybe reintrodue as as class  
+        #     if self.boxname == "css":
+        #         ext = ".css"
+        #     else:
+        #         ext = ".html"
+        #     folder = self.template_save_path()
+        #     filename = now() + ext
+        #     pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
+        #     p = os.path.join(folder, filename)
+        #     with io.open(p, "w", encoding="utf-8") as f:
+        #         f.write(content)
+        #         tooltip('saved as {}'.format(filename))
 
     def onView(self):
         currContent = self.__execJavaScript(self.js_save_cmd)
@@ -396,6 +405,7 @@ class MyDialog(QDialog):
         s = """insertTextAtCursor('%s')""" % unique_string
         self.__execJavaScript(s)
         edited_fieldcontent = self.__execJavaScript(self.js_save_cmd)
+        saveGeom(self, "1043915942_MyDialog")
         QDialog.accept(self)
 
     def onReject(self):
@@ -576,7 +586,7 @@ def readfile():
     addondir = os.path.join(os.path.dirname(__file__))
     templatefile = "codemirror.html"
     filefullpath = os.path.join(addondir, templatefile)
-    with io.open(filefullpath, 'r', encoding='utf-8') as f:
+    with io.open(filefullpath, "r", encoding="utf-8") as f:
         return f.read()
 
 
@@ -740,7 +750,8 @@ def saveStringForBox(self, boxname, content):
     folder = self.template_save_path(boxname)
     filename = now() + ext
     pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
-    with open(os.path.join(folder, filename), "w") as f:
+    p = os.path.join(folder, filename)
+    with io.open(p, "w", encoding="utf-8") as f:
         f.write(content)
         tooltip('saved as {}'.format(filename))
 CardLayout.saveStringForBox = saveStringForBox
