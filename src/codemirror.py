@@ -767,7 +767,11 @@ CardLayout.save_clear_editExternal = save_clear_editExternal
 
 
 def extra_dialog(self, box, tedit):
-    d = OldVersions(self, self.note, box, self.template_save_path(box), tedit.toPlainText())
+    p = self.template_save_path(box)
+    if not os.path.isdir(p):
+        tooltip("no prior versions found.")
+        return
+    d = OldVersions(self, self.note, box, p, tedit.toPlainText())
     d.exec()
 CardLayout.extra_dialog = extra_dialog
 
