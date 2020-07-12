@@ -413,7 +413,11 @@ class MyDialog(QDialog):
 
     def onView(self):
         currContent = self.__execJavaScript(self.js_save_cmd)
-        d = OldVersions(self, self.note, self.boxname, self.parent.template_save_path(self.boxname), currContent)
+        folder = self.parent.template_save_path(self.boxname)
+        if not os.path.isdir(folder):
+            tooltip("no prior versions found")
+            return
+        d = OldVersions(self, self.note, self.boxname, folder, currContent)
         if d.exec():
             pass
 
