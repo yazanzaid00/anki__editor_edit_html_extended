@@ -16,11 +16,21 @@ function toggleCheckbox(){{
     }}
     wrapped = !wrapped;
 }}
+
+
+
+
+function autoFormat(){{
+    let content = editor.getValue();
+    const beautified = {autoformat_function}(content);
+    editor.setValue(beautified);
+}}
 </script>
 
 <div>
     <input type="checkbox" id="toggleLineWrap" name="toggleLineWrap" onchange="toggleCheckbox()" checked>
     <label for="toggleLineWrap">Line Wrap</label>
+    <button type="button" onclick="javascript:autoFormat()">Autoformat Code</button>
 </div>
 <div>
     <!-- <textarea id="code" autofocus>{content}</textarea>   autofocus doesn't work with cm autocomplete -->

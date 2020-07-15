@@ -153,6 +153,7 @@ class CmDialog(QDialog):
         # the following seems to break cm so I just remove it <!--StartFragment--><!--EndFragment-->
         content = content.replace("<!--StartFragment-->", "").replace("<!--EndFragment-->","")
         bodyhtml = tmpl_content.format(
+            autoformat_function="html_beautify" if mode == "htmlmixed" else "css_beautify",
             content=content,
             isvim=keymap[1],
             keymap=keymap[0],
