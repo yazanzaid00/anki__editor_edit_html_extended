@@ -1,12 +1,12 @@
 {
-    "format":"bs4-prettified",
-    "fold after close": true,
-    "hotkey_codemirror":"Ctrl+Shift+Y",
-    "keymap":"sublime",
-    "theme":"xq-light",
-    "theme night mode":"dracula",
-    "editor_menu_show_button":true,
     "backup_template_path": false,
-    "diffcommandstart": ["code", "--diff"]
+    "diffcommandstart": ["code", "--diff"],
+    "editor_menu_show_button":true,
+    "format code after closing (minify/compact)": true,
+    "format code before opening (unfold)": "bs4-prettified",
+    "hotkey_codemirror": "Ctrl+Shift+Y",
+    "keymap": "sublime",
+    "theme night mode": "dracula",
+    "theme": "xq-light"
 }
  

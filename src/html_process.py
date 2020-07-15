@@ -16,8 +16,8 @@ tag_space_punc = re.compile('(>) ([.,:;])')
 # doesn't work with syntax highlighted code
 
 
-def postprocess(s):
-    if not gc("fold after close", True):
+def maybe_minify(s):
+    if not gc("format code after closing (minify/compact)", True):
         return s
     minifier = Minifier()
     for l in s.splitlines():
@@ -46,11 +46,11 @@ def reindent(s, factor=4):
     return '\n'.join(t)
 
 
-def prettify(html):
-    bs4ed = bs4.BeautifulSoup(html, "html.parser").prettify(formatter='html5')
-    if gc("format") == "bs4-prettified":
-        return bs4ed
-    elif gc("format") == "tweaked":
-        return reindent(bs4ed)
-    else:
+def maybe_format__prettify(html):
+    if gc("format code before opening (unfold)") not in ["bs4-prettified", "tweaked"]:
         return html
+    bs4ed = bs4.BeautifulSoup(html, "html.parser").prettify(formatter='html5')
+    if gc("format code before opening (unfold)") == "bs4-prettified":
+        return bs4ed
+    else: # gc("format code before opening (unfold)") == "tweaked":
+        return reindent(bs4ed)
