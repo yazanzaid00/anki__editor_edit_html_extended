@@ -147,6 +147,8 @@ class CmDialog(QDialog):
         self.web.title = "html source with codemirror"
         self.web.contextMenuEvent = self.contextMenuEvent
         tmpl_content = readfile("codemirror.html")
+        # the following seems to break cm so I just remove it <!--StartFragment--><!--EndFragment-->
+        content = content.replace("<!--StartFragment-->", "").replace("<!--EndFragment-->","")
         bodyhtml = tmpl_content.format(
             content=content,
             isvim=keymap[1],
