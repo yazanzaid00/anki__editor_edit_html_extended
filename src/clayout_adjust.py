@@ -109,7 +109,8 @@ def on_external_edit(self, boxname, textedit):
     self.textedit_in_cm = textedit
     content = textedit.toPlainText()
     win_title = 'Anki - edit html source code for field in codemirror'
-    d = CmDialog(self, content, "css", win_title, False, boxname, self.note)
+    mode = "css" if boxname == "css" else "htmlmixed"
+    d = CmDialog(self, content, mode, win_title, False, boxname, self.note)
     # exec_() doesn't work - jseditor isn't loaded = blocked
     # finished.connect via https://stackoverflow.com/questions/39638749/
     d.finished.connect(self.on_CMdialog_finished)
@@ -130,18 +131,18 @@ CardLayout.on_external_edit = on_external_edit
 
 
 if pointversion < 27:
-    def common_context_menu(self, tedit, box):
+    def common_context_menu(self, tedit, boxname):
         menu = tedit.createStandardContextMenu()
         sla = menu.addAction("edit in extra window with html/css editor")
-        sla.triggered.connect(lambda _, s=self: on_external_edit(s, box, tedit))
+        sla.triggered.connect(lambda _, s=self: on_external_edit(s, boxname, tedit))
         sav = menu.addAction("save")
-        sav.triggered.connect(lambda _, s=self: onTemplateSave(s, box, tedit))
+        sav.triggered.connect(lambda _, s=self: onTemplateSave(s, boxname, tedit))
         a = menu.addAction("prior versions extra dialog")
-        a.triggered.connect(lambda _, s=self: extra_dialog(s, box, tedit))
+        a.triggered.connect(lambda _, s=self: extra_dialog(s, boxname, tedit))
         b = menu.addAction("prior versions in file manager")
-        b.triggered.connect(lambda _, s=self: show_in_filemanager(s, box, tedit))
+        b.triggered.connect(lambda _, s=self: show_in_filemanager(s, boxname, tedit))
         c = menu.addAction("save, edit external and clear")
-        c.triggered.connect(lambda _, s=self: save_clear_editExternal(s, box, tedit))
+        c.triggered.connect(lambda _, s=self: save_clear_editExternal(s, boxname, tedit))
         return menu
     CardLayout.common_context_menu = common_context_menu
 
@@ -185,26 +186,23 @@ if pointversion < 27:
 if pointversion >= 28:
     def make_new_context_menu(self, location):
         if self.tform.front_button.isChecked():
-            print('on front')
-            box = "front"
+            boxname = "front"
         elif self.tform.back_button.isChecked():
-            print('on back')
-            box = "back"
+            boxname = "back"
         else:
-            print('in css')
-            box = "css"
+            boxname = "css"
         tedit = self.tform.edit_area
         menu = tedit.createStandardContextMenu()
         sla = menu.addAction("edit in extra window with html/css editor")
-        sla.triggered.connect(lambda _, s=self: on_external_edit(s, box, tedit))
+        sla.triggered.connect(lambda _, s=self: on_external_edit(s, boxname, tedit))
         sav = menu.addAction("save")
-        sav.triggered.connect(lambda _, s=self: onTemplateSave(s, box, tedit))
+        sav.triggered.connect(lambda _, s=self: onTemplateSave(s, boxname, tedit))
         a = menu.addAction("prior versions extra dialog")
-        a.triggered.connect(lambda _, s=self: extra_dialog(s, box, tedit))
+        a.triggered.connect(lambda _, s=self: extra_dialog(s, boxname, tedit))
         b = menu.addAction("prior versions in file manager")
-        b.triggered.connect(lambda _, s=self: show_in_filemanager(s, box, tedit))
+        b.triggered.connect(lambda _, s=self: show_in_filemanager(s, boxname, tedit))
         c = menu.addAction("save, edit external and clear")
-        c.triggered.connect(lambda _, s=self: save_clear_editExternal(s, box, tedit))
+        c.triggered.connect(lambda _, s=self: save_clear_editExternal(s, boxname, tedit))
         menu.exec_(QCursor.pos())
     CardLayout.make_new_context_menu = make_new_context_menu
 
