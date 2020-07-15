@@ -18,7 +18,7 @@ from aqt.utils import (
 )
 
 from .config import addon_path, gc, pointversion, unique_string
-from .dialog_cm import CmDialog
+from .dialog_cm import CmDialogForTemplate
 from .dialog_old_versions import OldVersions
 from .helpers import now, readfile
 
@@ -110,7 +110,7 @@ def on_external_edit(self, boxname, textedit):
     content = textedit.toPlainText()
     win_title = 'Anki - edit html source code for field in codemirror'
     mode = "css" if boxname == "css" else "htmlmixed"
-    d = CmDialog(self, content, mode, win_title, False, boxname, self.note)
+    d = CmDialogForTemplate(self, content, mode, win_title, boxname, self.note)
     # exec_() doesn't work - jseditor isn't loaded = blocked
     # finished.connect via https://stackoverflow.com/questions/39638749/
     d.finished.connect(self.on_CMdialog_finished)

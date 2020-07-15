@@ -132,21 +132,16 @@ class MyWebView(AnkiWebView):
             return '<link rel="stylesheet" type="text/css" href="%s">' % self.webBundlePath(fname)
 
 
-class CmDialog(QDialog):
-    def __init__(self, parent, content, mode, win_title, isfield, boxname, note):
-        super(CmDialog, self).__init__(parent)
+class CmDialogBase(QDialog):
+    def __init__(self, parent, content, mode, win_title):
+        super(CmDialogBase, self).__init__(parent)
         self.parent = parent
-        self.note = note
-        self.model = self.note.model()
-        self.boxname = boxname
         self.js_save_cmd = "editor.getValue()"
         self.setWindowTitle(win_title)
         self.dialog = edit_window.Ui_Dialog()
         self.dialog.setupUi(self)
         self.dialog.outer.setContentsMargins(0, 0, 0, 0)
         self.dialog.outer.setSpacing(0)
-        if isfield:
-            self.dialog.wid_buts.setVisible(False)
         self.web = MyWebView(self)
         self.dialog.outer.addWidget(self.web)
         qsp = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -170,60 +165,13 @@ class CmDialog(QDialog):
             lint="true",
         )
         self.web.stdHtml(bodyhtml, cssfiles, jsfiles)
-        self.dialog.pb_save.clicked.connect(self.onSave)
-        self.dialog.pb_viewold.clicked.connect(self.onView)
         restoreGeom(self, "1043915942_CmDialog")
-
-    def onSave(self):
-        if self.boxname:
-            self.onTemplateSave()
-        else:
-            pass
-
-    # maybe relevant for editor?
-    # def template_save_path(self):
-    #     base = os.path.join(addon_path, "user_files")
-    #     if gc("backup_template_path"):
-    #         user = gc("backup_template_path")
-    #         if os.path.isdir(base):
-    #             base = user
-    #         else:
-    #             tooltip('Invalid setting for "backup_template_path". This is not a directory. '
-    #                     'Using default path in add-on folder')
-    #     # don't use model['name'] in case a user renames a template ...
-    #     return os.path.join(base, str(self.model['id']), self.boxname)
-
-    def onTemplateSave(self):
-        content = self.__execJavaScript(self.js_save_cmd)
-        self.parent.saveStringForBox(self.boxname, content)
-        # maybe reintrodue as as class  
-        #     if self.boxname == "css":
-        #         ext = ".css"
-        #     else:
-        #         ext = ".html"
-        #     folder = self.template_save_path()
-        #     filename = now() + ext
-        #     pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
-        #     p = os.path.join(folder, filename)
-        #     with io.open(p, "w", encoding="utf-8") as f:
-        #         f.write(content)
-        #         tooltip('saved as {}'.format(filename))
-
-    def onView(self):
-        currContent = self.__execJavaScript(self.js_save_cmd)
-        folder = self.parent.template_save_path(self.boxname)
-        if not os.path.isdir(folder):
-            tooltip("no prior versions found")
-            return
-        d = OldVersions(self, self.note, self.boxname, folder, currContent)
-        if d.exec():
-            pass
 
     def accept(self):
         # replace cursor with unique string
         s = """insertTextAtCursor('%s')""" % unique_string
-        self.__execJavaScript(s)
-        mw.col.cmhelper_field_content = self.__execJavaScript(self.js_save_cmd)
+        self.execJavaScript(s)
+        mw.col.cmhelper_field_content = self.execJavaScript(self.js_save_cmd)
         saveGeom(self, "1043915942_CmDialog")
         QDialog.accept(self)
 
@@ -242,5 +190,60 @@ class CmDialog(QDialog):
         else:
             event.ignore()
 
-    def __execJavaScript(self, script):
+    def execJavaScript(self, script):
         return sync_execJavaScript(self.web, script)
+
+
+class CmDialogField(CmDialogBase):
+    def __init__(self, parent, content, mode, win_title):
+        super(CmDialogField, self).__init__(parent, content, mode, win_title)
+        self.dialog.wid_buts.setVisible(False)
+
+
+# TODO process/remove comments
+class CmDialogForTemplate(CmDialogBase):
+    def __init__(self, parent, content, mode, win_title, boxname, note):
+        super(CmDialogForTemplate, self).__init__(parent, content, mode, win_title)
+        self.boxname = boxname
+        self.note = note
+        self.dialog.pb_save.clicked.connect(self.onTemplateSave)
+        self.dialog.pb_viewold.clicked.connect(self.onView)
+
+    # maybe relevant for editor?
+    # def template_save_path(self):
+    #     base = os.path.join(addon_path, "user_files")
+    #     if gc("backup_template_path"):
+    #         user = gc("backup_template_path")
+    #         if os.path.isdir(base):
+    #             base = user
+    #         else:
+    #             tooltip('Invalid setting for "backup_template_path". This is not a directory. '
+    #                     'Using default path in add-on folder')
+    #     # don't use model['name'] in case a user renames a template ...
+    #     return os.path.join(base, str(self.model['id']), self.boxname)
+
+    def onTemplateSave(self):
+        content = self.execJavaScript(self.js_save_cmd)
+        self.parent.saveStringForBox(self.boxname, content)
+        # maybe reintrodue as as class  
+        #     if self.boxname == "css":
+        #         ext = ".css"
+        #     else:
+        #         ext = ".html"
+        #     folder = self.template_save_path()
+        #     filename = now() + ext
+        #     pathlib.Path(folder).mkdir(parents=True, exist_ok=True)
+        #     p = os.path.join(folder, filename)
+        #     with io.open(p, "w", encoding="utf-8") as f:
+        #         f.write(content)
+        #         tooltip('saved as {}'.format(filename))
+
+    def onView(self):
+        currContent = self.execJavaScript(self.js_save_cmd)
+        folder = self.parent.template_save_path(self.boxname)
+        if not os.path.isdir(folder):
+            tooltip("no prior versions found")
+            return
+        d = OldVersions(self, self.note, self.boxname, folder, currContent)
+        if d.exec():
+            pass

@@ -11,7 +11,7 @@ from aqt.qt import (
 from aqt.editor import Editor
 
 from .config import addon_path, gc, unique_string
-from .dialog_cm import CmDialog
+from .dialog_cm import CmDialogField
 from .helpers import now, readfile
 from .html_process import maybe_minify, maybe_format__prettify
 
@@ -52,7 +52,7 @@ Editor.on_CMdialog_finished = on_CMdialog_finished
 def _cm_start_dialog(self):
     win_title = 'Anki - edit html source code for field in codemirror'
     pretty_content = maybe_format__prettify(self.note.fields[self.original_current_field])
-    d = CmDialog(None, pretty_content, "htmlmixed", win_title, True, False, self.note)
+    d = CmDialogField(None, pretty_content, "htmlmixed", win_title)
     # exec_() doesn't work - jseditor isn't loaded = blocked
     # finished.connect via https://stackoverflow.com/questions/39638749/
     d.finished.connect(self.on_CMdialog_finished)
