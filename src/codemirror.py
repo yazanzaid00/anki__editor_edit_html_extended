@@ -368,9 +368,9 @@ class OldVersions(QDialog):
         QDialog.reject(self)
 
 
-class MyDialog(QDialog):
+class CmDialog(QDialog):
     def __init__(self, parent, bodyhtml, win_title, js_save_cmd, isfield, boxname, note):
-        super(MyDialog, self).__init__(parent)
+        super(CmDialog, self).__init__(parent)
         self.parent = parent
         self.note = note
         self.model = self.note.model()
@@ -395,7 +395,7 @@ class MyDialog(QDialog):
         self.web.stdHtml(bodyhtml, cssfiles, jsfiles)
         self.dialog.pb_save.clicked.connect(self.onSave)
         self.dialog.pb_viewold.clicked.connect(self.onView)
-        restoreGeom(self, "1043915942_MyDialog")
+        restoreGeom(self, "1043915942_CmDialog")
 
     def onSave(self):
         if self.boxname:
@@ -448,20 +448,20 @@ class MyDialog(QDialog):
         s = """insertTextAtCursor('%s')""" % unique_string
         self.__execJavaScript(s)
         edited_fieldcontent = self.__execJavaScript(self.js_save_cmd)
-        saveGeom(self, "1043915942_MyDialog")
+        saveGeom(self, "1043915942_CmDialog")
         QDialog.accept(self)
 
     def reject(self):
         ok = askUser("Close and discard changes?")
         if ok:
-            saveGeom(self, "1043915942_MyDialog")
+            saveGeom(self, "1043915942_CmDialog")
             QDialog.reject(self)
 
     def closeEvent(self, event):
         ok = askUser("Close and discard changes?")
         if ok:
             event.ignore()
-            saveGeom(self, "1043915942_MyDialog")
+            saveGeom(self, "1043915942_CmDialog")
             self.reject()
         else:
             event.ignore()
@@ -584,7 +584,7 @@ def _cm_start_dialog(self, field):
         unique_string=unique_string,
         lint="true"
     )
-    d = MyDialog(None, bodyhtml, win_title, js_save_cmd, True, False, self.note)
+    d = CmDialog(None, bodyhtml, win_title, js_save_cmd, True, False, self.note)
     # exec_() doesn't work - jseditor isn't loaded = blocked
     # finished.connect via https://stackoverflow.com/questions/39638749/
     d.finished.connect(self.on_CMdialog_finished)
@@ -767,7 +767,7 @@ CardLayout.onTemplateSave = onTemplateSave
 
 def on_CMdialog_finished(self, status):
     if status:
-        # edited_fieldcontent is global var set in MyDialog class.
+        # edited_fieldcontent is global var set in CmDialog class.
         # unique string is used so that I find the cursor position in CM. Useless here.
         self.textedit_in_cm.setPlainText(edited_fieldcontent.replace(unique_string, ""))  
 CardLayout.on_CMdialog_finished = on_CMdialog_finished
@@ -787,7 +787,7 @@ def on_external_edit(self, boxname, textedit):
         unique_string=unique_string,
         lint="true"
     )
-    d = MyDialog(self, bodyhtml, win_title, js_save_cmd, False, boxname, self.note)
+    d = CmDialog(self, bodyhtml, win_title, js_save_cmd, False, boxname, self.note)
     # exec_() doesn't work - jseditor isn't loaded = blocked
     # finished.connect via https://stackoverflow.com/questions/39638749/
     d.finished.connect(self.on_CMdialog_finished)
