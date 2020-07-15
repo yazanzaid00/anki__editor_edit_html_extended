@@ -164,7 +164,7 @@ class CmDialog(QDialog):
             content=content,
             isvim=keymap[1],
             keymap=keymap[0],
-            mode="css",
+            mode=mode,
             theme=selectedtheme,
             unique_string=unique_string,
             lint="true",
