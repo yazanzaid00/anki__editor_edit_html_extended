@@ -388,7 +388,7 @@ class MyDialog(QDialog):
         qsp.setVerticalStretch(2)
         self.web.setSizePolicy(qsp)
         acceptShortcut = QShortcut(QKeySequence("Ctrl+Return"), self)
-        acceptShortcut.activated.connect(self.onAccept)
+        acceptShortcut.activated.connect(self.accept)
         self.web.title = "html source with codemirror"
         self.web.contextMenuEvent = self.contextMenuEvent
         self.web.stdHtml(bodyhtml, cssfiles, jsfiles)
@@ -442,9 +442,6 @@ class MyDialog(QDialog):
             pass
 
     def accept(self):
-        self.onAccept()
-
-    def onAccept(self):
         global edited_fieldcontent
         # replace cursor with unique string
         s = """insertTextAtCursor('%s')""" % unique_string
