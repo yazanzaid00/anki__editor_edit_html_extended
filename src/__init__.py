@@ -110,7 +110,9 @@ covered by the following copyright and permission notice:
 
 This add-on bundles and  makes Anki load the js package htmlhint.js,
 which has this LICENSE info, https://github.com/htmlhint/HTMLHint/blob/master/LICENSE.md:
-    (https://cdn.jsdelivr.net/npm/htmlhint@latest/dist/htmlhint.js)
+    The htmlhint.js was built according to the instructions from
+    https://github.com/htmlhint/HTMLHint/wiki/Developer-guide with "npm run build", also see
+    https://cdn.jsdelivr.net/npm/htmlhint@latest/dist/htmlhint.js
 
     MIT License
 
