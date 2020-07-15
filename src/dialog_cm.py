@@ -73,6 +73,9 @@ cssfiles = addon_cssfiles + other_cssfiles
 
 addon_jsfiles = ["codemirror/lib/codemirror.js",
                  "htmlhint.js",
+                 "beautify.js",
+                 "beautify-css.js",
+                 "beautify-html.js",
                  keymappath,
                  "codemirror/addon/hint/show-hint.js",
                  "codemirror/addon/hint/javascript-hint.js",
