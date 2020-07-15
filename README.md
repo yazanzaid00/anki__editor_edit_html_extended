@@ -1,7 +1,7 @@
 #### Add-on for Anki: Extended html editor with CodeMirror
 
-see [Ankiweb]().
+see [Ankiweb](https://ankiweb.net/shared/info/1043915942).
 
 ##### License
 
-See src/LICENSE and the top of the file src/codemirror.py.
+See the top of the file `src/__init__.py`.
