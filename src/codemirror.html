@@ -22,16 +22,21 @@ function toggleCheckbox(){{
     <input type="checkbox" id="toggleLineWrap" name="toggleLineWrap" onchange="toggleCheckbox()" checked>
     <label for="toggleLineWrap">Line Wrap</label>
 </div>
-<div><textarea id="code" autofocus>{content}</textarea></div>
+<div>
+    <!-- <textarea id="code" autofocus>{content}</textarea>   autofocus doesn't work with cm autocomplete -->
+    <textarea id="code">{content}</textarea>
+</div>
 
 <script>
     var editor = CodeMirror.fromTextArea(document.getElementById("code"), {{
         lineNumbers: false,
         styleActiveLine: true,
         gutter: true,
+        autofocus: true,
         lineWrapping: true,
         vimMode: {isvim},
         keyMap: "{keymap}",  // "sublime" "emacs" "sublime"
+        extraKeys: {{"Ctrl-Space": "autocomplete"}},
     //  extraKeys: {{"Alt-F": "findPersistent"}},
     //  extraKeys: {{"F11": toggleFullscreenEditing, "Esc": toggleFullscreenEditing}}, // breaks editor
         autoCloseBrackets: true,
