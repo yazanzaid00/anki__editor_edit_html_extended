@@ -73,6 +73,14 @@ cssfiles = addon_cssfiles + other_cssfiles
 
 addon_jsfiles = ["codemirror/lib/codemirror.js",
                  "htmlhint.js",
+                #  JS error /_addons/1043915942/web/csslint.js:7719 Uncaught TypeError: Cannot create property 'errors' on string 'true' 
+                #  "csslint.js",
+                # adding these files also doesn't help
+                #  "csslint-node.js",
+                #  "csslint-rhino.js",
+                #  "csslint-tests.js",
+                #  "csslint-worker.js",
+                #  "csslint-wsh.js",
                  "beautify.js",
                  "beautify-css.js",
                  "beautify-html.js",
