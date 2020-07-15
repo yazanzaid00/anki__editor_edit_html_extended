@@ -128,7 +128,7 @@ which has this LICENSE info, https://github.com/htmlhint/HTMLHint/blob/master/LI
 from aqt import gui_hooks
 from aqt import mw
 
-from . import codemirror
+from . import editor
 from . import clayout_adjust
 
 
