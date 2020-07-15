@@ -207,10 +207,16 @@ themes = ["3024-day", "3024-night", "abcdef", "ambiance", "ambiance-mobile",
           "moxer", "material-darker", "material-palenight", "material-ocean"]
 
 
-if gc('theme') in themes:
-    selectedtheme = gc('theme')
+if mw.pm.night_mode():
+    if gc('theme night mode') in themes:
+        selectedtheme = gc('theme night mode')
+    else:
+        selectedtheme = "dracula"
 else:
-    selectedtheme = "neat"
+    if gc('theme') in themes:
+        selectedtheme = gc('theme')
+    else:
+        selectedtheme = "neat"
 themepath = "codemirror/theme/" + selectedtheme + ".css"
 
 uk = gc('keymap', "some_string_so_that_I_can_lower_it").lower()

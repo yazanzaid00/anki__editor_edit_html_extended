@@ -4,6 +4,7 @@
     "hotkey_codemirror":"Ctrl+Shift+Y",
     "keymap":"sublime",
     "theme":"xq-light",
+    "theme night mode":"dracula",
     "editor_menu_show_button":true,
     "backup_template_path": false,
     "diffcommandstart": ["code", "--diff"]
