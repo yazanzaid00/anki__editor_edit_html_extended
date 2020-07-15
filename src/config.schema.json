@@ -1,0 +1,76 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "title": "extended html editor for fields and card templates",
+    "properties": {
+        "Format code after closing (minify/compact)": {
+            "type": "boolean",
+            "default": true,
+            "description": ""
+        },
+        "Format code before opening (unfold)": {
+            "type": ["boolean", "string"],
+            "enum": [false, "bs4-prettified", "tweaked"],
+            "default": "bs4-prettified",
+            "description": ""
+        },
+        "backup_template_path": {
+            "type": ["boolean", "string"],
+            "default": false,
+            "description": ""
+        },
+        "diffcommandstart": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": ""
+        },
+        "editor_menu_show_button": {
+            "type": "boolean",
+            "default": true,
+            "description": ""
+        },
+        "modifier for insert current text only": {
+            "type": "string",
+            "default": "Ctrl+Shift+Y"
+        },
+        "keymap": {
+            "type": "string",
+            "enum": ["sublime", "vim", "emacs"],
+            "default": "Ctrl"
+        },
+        "theme night mode": {
+            "type": "string",
+            "enum": ["3024-day", "3024-night", "abcdef", "ambiance", "ambiance-mobile",
+                "base16-dark", "base16-light", "bespin", "blackboard", "cobalt", "colorforth",
+                "darcula", "dracula", "duotone-dark", "duotone-light", "eclipse", "elegant",
+                "erlang-dark", "gruvbox-dark", "hopscotch", "icecoder", "idea", "isotope",
+                "lesser-dark", "liquibyte", "lucario", "material", "mbo", "mdn-like",
+                "midnight", "monokai", "neat", "neo", "night", "oceanic-next", "panda-syntax",
+                "paraiso-dark", "paraiso-light", "pastel-on-dark", "railscasts", "rubyblue",
+                "seti", "shadowfox", "solarized", "ssms", "the-matrix", "tomorrow-night-bright",
+                "tomorrow-night-eighties", "ttcn", "twilight", "vibrant-ink", "xq-dark",
+                "xq-light", "yeti", "zenburn",
+                "moxer", "material-darker", "material-palenight", "material-ocean"
+            ],
+            "default": "dracula"
+        },
+        "theme": {
+            "type": "string",
+            "enum": ["3024-day", "3024-night", "abcdef", "ambiance", "ambiance-mobile",
+                "base16-dark", "base16-light", "bespin", "blackboard", "cobalt", "colorforth",
+                "darcula", "dracula", "duotone-dark", "duotone-light", "eclipse", "elegant",
+                "erlang-dark", "gruvbox-dark", "hopscotch", "icecoder", "idea", "isotope",
+                "lesser-dark", "liquibyte", "lucario", "material", "mbo", "mdn-like",
+                "midnight", "monokai", "neat", "neo", "night", "oceanic-next", "panda-syntax",
+                "paraiso-dark", "paraiso-light", "pastel-on-dark", "railscasts", "rubyblue",
+                "seti", "shadowfox", "solarized", "ssms", "the-matrix", "tomorrow-night-bright",
+                "tomorrow-night-eighties", "ttcn", "twilight", "vibrant-ink", "xq-dark",
+                "xq-light", "yeti", "zenburn",
+                "moxer", "material-darker", "material-palenight", "material-ocean"
+            ],
+            "default": "xq-light"
+        }
+    }
+}
