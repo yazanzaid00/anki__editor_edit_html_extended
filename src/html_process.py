@@ -49,8 +49,8 @@ def reindent(s, factor=4):
 def maybe_format__prettify(html):
     if gc("Format code before opening (unfold)") not in ["bs4-prettified", "tweaked"]:
         return html
-    bs4ed = bs4.BeautifulSoup(html, "html.parser").prettify(formatter='html5')
     if gc("Format code before opening (unfold)") == "bs4-prettified":
+        bs4ed = bs4.BeautifulSoup(html, "html.parser").prettify(formatter='html5')
         return bs4ed
     else: # gc("Format code before opening (unfold)") == "tweaked":
         return reindent(bs4ed)
