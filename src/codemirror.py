@@ -168,6 +168,7 @@ from .sync_execJavaScript import sync_execJavaScript
 
 from .forms import edit_window
 from .forms import versions
+from .helpers import readfile
 
 
 from anki import version as anki_version
@@ -523,72 +524,7 @@ def prettify(html):
 # from Sync Cursor Between Fields and HTML Editor by Glutanimate
 # https://ankiweb.net/shared/info/138856093
 # based on SO posts by Tim Down / B T (http://stackoverflow.com/q/16095155)
-js_move_cursor = """
-    function findHiddenCharacters(node, beforeCaretIndex) {
-    var hiddenCharacters = 0
-    var lastCharWasWhiteSpace=true
-    for(var n=0; n-hiddenCharacters<beforeCaretIndex &&n<node.length; n++) {
-        if([' ','\\n','\\t','\\r'].indexOf(node.textContent[n]) !== -1) {
-            if(lastCharWasWhiteSpace)
-                hiddenCharacters++
-            else
-                lastCharWasWhiteSpace = true
-        } else {
-            lastCharWasWhiteSpace = false   
-        }
-    }
-
-    return hiddenCharacters
-}
-
-var setSelectionByCharacterOffsets = null;
-
-if (window.getSelection && document.createRange) {
-    setSelectionByCharacterOffsets = function(containerEl, position) {
-        var charIndex = 0, range = document.createRange();
-        range.setStart(containerEl, 0);
-        range.collapse(true);
-        var nodeStack = [containerEl], node, foundStart = false, stop = false;
-
-        while (!stop && (node = nodeStack.pop())) {
-            if (node.nodeType == 3) {
-                var hiddenCharacters = findHiddenCharacters(node, node.length)
-                var nextCharIndex = charIndex + node.length - hiddenCharacters;
-
-                if (position >= charIndex && position <= nextCharIndex) {
-                    var nodeIndex = position - charIndex
-                    var hiddenCharactersBeforeStart = findHiddenCharacters(node, nodeIndex)
-                    range.setStart(node, nodeIndex + hiddenCharactersBeforeStart );
-                    range.setEnd(node, nodeIndex + hiddenCharactersBeforeStart);
-                    stop = true;
-                }
-                charIndex = nextCharIndex;
-            } else {
-                var i = node.childNodes.length;
-                while (i--) {
-                    nodeStack.push(node.childNodes[i]);
-                }
-            }
-        }
-
-        var sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-    }
-} else if (document.selection) {
-    setSelectionByCharacterOffsets = function(containerEl, start, end) {
-        var textRange = document.body.createTextRange();
-        textRange.moveToElementText(containerEl);
-        textRange.collapse(true);
-        textRange.moveEnd("character", end);
-        textRange.moveStart("character", start);
-        textRange.select();
-    };
-}
-
-
-setSelectionByCharacterOffsets(currentField, %s)
-"""
+js_move_cursor = readfile("move_cursor.js")
 
 
 def _onCMUpdateField(self):
@@ -634,16 +570,8 @@ def on_CMdialog_finished(self, status):
 Editor.on_CMdialog_finished = on_CMdialog_finished
 
 
-def readfile():
-    addondir = os.path.join(os.path.dirname(__file__))
-    templatefile = "codemirror.html"
-    filefullpath = os.path.join(addondir, templatefile)
-    with io.open(filefullpath, "r", encoding="utf-8") as f:
-        return f.read()
-
-
 def _cm_start_dialog(self, field):
-    tmpl_content = readfile()
+    tmpl_content = readfile("codemirror.html")
     win_title = 'Anki - edit html source code for field in codemirror'
     js_save_cmd = "editor.getValue()"
     pretty_content = prettify(self.note.fields[field])
@@ -847,7 +775,7 @@ CardLayout.on_CMdialog_finished = on_CMdialog_finished
 
 def on_external_edit(self, boxname, textedit):
     self.textedit_in_cm = textedit
-    tmpl_content = readfile()
+    tmpl_content = readfile("codemirror.html")
     win_title = 'Anki - edit html source code for field in codemirror'
     js_save_cmd = "editor.getValue()"
     bodyhtml = tmpl_content.format(
