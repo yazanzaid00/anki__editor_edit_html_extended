@@ -451,11 +451,11 @@ class MyDialog(QDialog):
         saveGeom(self, "1043915942_MyDialog")
         QDialog.accept(self)
 
-    def onReject(self):
+    def reject(self):
         ok = askUser("Close and discard changes?")
         if ok:
             saveGeom(self, "1043915942_MyDialog")
-            self.reject()
+            QDialog.reject(self)
 
     def closeEvent(self, event):
         ok = askUser("Close and discard changes?")
