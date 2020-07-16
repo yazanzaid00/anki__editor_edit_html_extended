@@ -88,7 +88,7 @@ def myOnFieldUndoHtmlExtended(self):
         return
     if not hasattr(self, "original_cm_text") or not self.original_cm_text:
         return
-    if not hasattr(self, "cm_field"):  # may be index 0
+    if not hasattr(self, "original_current_field"):  # may be index 0
         return
     self.note.fields[self.original_current_field] = self.original_cm_text
     self.loadNote()
