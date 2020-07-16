@@ -5,13 +5,6 @@ from .config import gc
 from .htmlmin import Minifier
 
 
-open_space_open = re.compile('(<[^/>]+>) (<[^/>]+>)')
-close_space_close = re.compile('(</[^>]+>) (</)')
-open_space_text = re.compile('(<[^/>]+>) ([^<>]+)')
-open_text_close = re.compile('(<[^/>]+>) ([^<>]+) (</)')
-tag_space_punc = re.compile('(>) ([.,:;])')
-
-
 # the function postprocess from https://ankiweb.net/shared/info/410936778 
 # doesn't work with syntax highlighted code
 
