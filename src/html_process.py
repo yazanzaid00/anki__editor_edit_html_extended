@@ -20,8 +20,15 @@ def maybe_minify(s):
     if not gc("Format code after closing (minify/compact)", True):
         return s
     minifier = Minifier()
-    for l in s.splitlines():
-        minifier.input(l)
+    # "splitlines" breaks "pre"!
+    #     https://developer.mozilla.org/en-US/docs/Web/HTML/Element/pre
+    #     The HTML <pre> element represents preformatted text which is to be presented exactly as 
+    #     written in the #HTML file. The text is typically rendered using a non-proportional 
+    #     ("monospace") font. Whitespace inside this element is displayed as written.
+    #for l in s.splitlines():
+    #    minifier.input(l)
+    #out = minifier.output
+    minifier.input(s)
     out = minifier.output
     return out
 
