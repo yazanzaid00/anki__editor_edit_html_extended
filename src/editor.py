@@ -23,7 +23,12 @@ from .html_process import maybe_minify, maybe_format__prettify
 js_move_cursor = readfile("move_cursor.js")
 
 
-def _onCMUpdateField(self, content):
+def on_CMdialog_finished(self, status):
+    if status:
+        content = maybe_minify(mw.col.cmhelper_field_content)
+    else:  # restore old 
+        content = self.original_cm_text
+
     try:
         note = mw.col.getNote(self.nid)
     except:   # new note
@@ -38,14 +43,6 @@ def _onCMUpdateField(self, content):
     # the function setSelectionByCharacterOffsets isn't precise and sometimes produces errors 
     # with complex content and ruins the field contents. So cursor sync just works in one way ....
     # self.web.eval(js_move_cursor % pos)
-
-
-def on_CMdialog_finished(self, status):
-    if status:
-        content = maybe_minify(mw.col.cmhelper_field_content)
-    else:  # restore old 
-        content = self.original_cm_text
-    self.saveNow(lambda s=self, c=content: _onCMUpdateField(s, c))
 Editor.on_CMdialog_finished = on_CMdialog_finished
 
 
@@ -72,17 +69,6 @@ def cm_start_dialog(self):
     self.saveNow(lambda s=self: cm_start_dialog_helper(s))
 
 
-def mirror_start(self):
-    modifiers = self.mw.app.queryKeyboardModifiers()
-    shift_and_click = modifiers == Qt.ShiftModifier
-    if shift_and_click:
-        myOnFieldUndoHtmlExtended(self)
-        return
-    self.original_current_field = self.currentField
-    self.saveNow(lambda s=self: cm_start_dialog(s))
-Editor.mirror_start = mirror_start
-
-
 def myOnFieldUndoHtmlExtended(self):
     if self.cm_nid != self.note.id:
         return
@@ -94,6 +80,17 @@ def myOnFieldUndoHtmlExtended(self):
     self.loadNote()
     self.web.setFocus()
     self.loadNote(focusTo=self.original_current_field)
+
+
+def mirror_start(self):
+    modifiers = self.mw.app.queryKeyboardModifiers()
+    shift_and_click = modifiers == Qt.ShiftModifier
+    if shift_and_click:
+        myOnFieldUndoHtmlExtended(self)
+        return
+    self.original_current_field = self.currentField
+    self.saveNow(lambda s=self: cm_start_dialog(s))
+Editor.mirror_start = mirror_start
 
 
 def keystr(k):
