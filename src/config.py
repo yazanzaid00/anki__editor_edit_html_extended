@@ -19,7 +19,7 @@ codemirror_path = "/_addons/%s/web/" % addonfoldername
 
 
 # unique_string = '<span style="display:none">äöüäöü</span>'
-unique_string = 'äöüäöü'
+unique_string = '2508ee56881b40e8a221feaf3605105e'  # random uuid, Umlaute break with json.dumps
 
 
 regex = r"(web[/\\].*)"

@@ -60,11 +60,14 @@ function autoFormat(){{
         lint: "{lint}"
     }});
     // editor.setSize($(window).width(),$(window).height()-30);   // overrides CSS - https://codemirror.net/doc/manual.html
-    let cursor = editor.getSearchCursor('{unique_string}');
-    cursor.findNext();
-    let newpos  = cursor.from()
-    cursor.replace("");
-    editor.setCursor(newpos);
+    function moveCursor(){{
+        let cursor = editor.getSearchCursor('{unique_string}');
+        cursor.findNext();
+        let newpos = cursor.from()
+        cursor.replace("");
+        editor.setCursor(newpos);
+    }}
+    // moveCursor();
     //editor.setCursor(1, 3);
 
     function insertTextAtCursor(text) {{

@@ -1,3 +1,4 @@
+import json
 import os
 
 from aqt import mw
@@ -153,10 +154,10 @@ class CmDialogBase(QDialog):
         self.web.contextMenuEvent = self.contextMenuEvent
         tmpl_content = readfile("codemirror.html")
         # the following seems to break cm so I just remove it <!--StartFragment--><!--EndFragment-->
-        content = content.replace("<!--StartFragment-->", "").replace("<!--EndFragment-->","")
+        self.content = content.replace("<!--StartFragment-->", "").replace("<!--EndFragment-->","")
         bodyhtml = tmpl_content.format(
             autoformat_function="html_beautify" if mode == "htmlmixed" else "css_beautify",
-            content=content,
+            content="",
             isvim=keymap[1],
             keymap=keymap[0],
             mode=mode,
@@ -166,6 +167,11 @@ class CmDialogBase(QDialog):
         )
         self.web.stdHtml(bodyhtml, cssfiles, jsfiles)
         restoreGeom(self, "1043915942_CmDialog")
+        self.web.loadFinished.connect(self.load_finished)
+    
+    def load_finished(self):
+        js = f'editor.setValue({json.dumps(self.content)}); moveCursor();'
+        self.web.page().runJavaScript(js)
 
     def accept(self):
         # replace cursor with unique string
