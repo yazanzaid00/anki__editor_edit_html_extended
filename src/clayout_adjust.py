@@ -209,8 +209,9 @@ if pointversion >= 28:
         a.triggered.connect(lambda _, s=self: extra_dialog(s, boxname, tedit))
         b = menu.addAction("prior versions in file manager")
         b.triggered.connect(lambda _, s=self: show_in_filemanager(s, boxname, tedit))
-        c = menu.addAction("save, edit external and clear")
-        c.triggered.connect(lambda _, s=self: save_clear_editExternal(s, boxname, tedit))
+        # clearing is ugly. Use the external editor add-on instead
+        # c = menu.addAction("save, edit external and clear")
+        # c.triggered.connect(lambda _, s=self: save_clear_editExternal(s, boxname, tedit))
         menu.exec_(QCursor.pos())
     CardLayout.make_new_context_menu = make_new_context_menu
 
