@@ -8,6 +8,7 @@ Copyright (c) 2019 ignd
           (c) 2013, Dave Mankoff
           (c) 2017 Glutanimate
           (c) Ankitects Pty Ltd and contributors
+          (c) github.com/pointtonull, from "External Editor", https://ankiweb.net/shared/info/16727059
 
 
 This program is free software: you can redistribute it and/or modify

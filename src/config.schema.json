@@ -26,6 +26,17 @@
             },
             "description": ""
         },
+        "editor": {
+            "type": "string",
+            "default": "code"
+        },
+        "editor parameters": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": ""
+        },
         "editor_menu_show_button": {
             "type": "boolean",
             "default": true,

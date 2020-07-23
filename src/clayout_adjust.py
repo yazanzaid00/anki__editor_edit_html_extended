@@ -24,6 +24,7 @@ from .config import addon_path, gc, pointversion, unique_string
 from .dialog_cm import CmDialogForTemplate
 from .dialog_old_versions import OldVersions
 from .helpers import now, readfile
+from .process_string_in_texteditor import edit_string_externally_and_return_mod
 
 
 def template_save_path(self, boxname):
@@ -40,30 +41,21 @@ def template_save_path(self, boxname):
 CardLayout.template_save_path = template_save_path
 
 
-def save_clear_editExternal(self, box, tedit):
-    self.onTemplateSave(box, tedit)
-    content = tedit.toPlainText()
-    tedit.setPlainText("")
+def editExternal(self, box, tedit):
+    # self.onTemplateSave(box, tedit)
+    text = tedit.toPlainText()
     if box == "css":
         ext = ".css"
     else:
         ext = ".html"
-    suf = "current" + ext
-    cur = NamedTemporaryFile(delete=False, suffix=suf)
-    cur.write(str.encode(content))
-    cur.close()
-    cmd = gc("diffcommandstart")
-    env = os.environ.copy()
-    if isLin:
-        toremove = ['LD_LIBRARY_PATH', 'QT_PLUGIN_PATH', 'QML2_IMPORT_PATH']
-        for e in toremove:
-            env.pop(e, None)
     try:
-        subprocess.Popen([cmd[0], cur.name], env=env)
-    except:
-        tooltip("Error while trying to open the external editor. Maybe there's an error in your config.")
-        tedit.setPlainText(content)
-CardLayout.save_clear_editExternal = save_clear_editExternal
+        new = edit_string_externally_and_return_mod(text, filename=None, block=True, suffix=ext)
+    except RuntimeError:
+        tooltip('Error when trying to edit externally')
+        return
+    if new:
+        tedit.setPlainText(new)
+CardLayout.editExternal = editExternal
 
 
 def extra_dialog(self, box, tedit):
@@ -109,7 +101,7 @@ CardLayout.onTemplateSave = onTemplateSave
 def on_CMdialog_finished(self, status):
     if status:
         # unique string is used so that I find the cursor position in CM. Useless here.
-        self.textedit_in_cm.setPlainText(mw.col.cmhelper_field_content.replace(unique_string, ""))  
+        self.textedit_in_cm.setPlainText(mw.col.cmhelper_field_content.replace(unique_string, ""))
 CardLayout.on_CMdialog_finished = on_CMdialog_finished
 
 
@@ -209,9 +201,8 @@ if pointversion >= 28:
         a.triggered.connect(lambda _, s=self: extra_dialog(s, boxname, tedit))
         b = menu.addAction("prior versions in file manager")
         b.triggered.connect(lambda _, s=self: show_in_filemanager(s, boxname, tedit))
-        # clearing is ugly. Use the external editor add-on instead
-        # c = menu.addAction("save, edit external and clear")
-        # c.triggered.connect(lambda _, s=self: save_clear_editExternal(s, boxname, tedit))
+        c = menu.addAction("edit in external text editor")
+        c.triggered.connect(lambda _, s=self: editExternal(s, boxname, tedit))
         menu.exec_(QCursor.pos())
     CardLayout.make_new_context_menu = make_new_context_menu
 

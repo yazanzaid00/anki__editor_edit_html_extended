@@ -3,6 +3,8 @@
     "Format code before opening (unfold)": "bs4-prettified",
     "backup_template_path": false,
     "diffcommandstart": ["code", "--diff"],
+    "editor": "code",
+    "editor parameters": ["-w"],
     "editor_menu_show_button": true,
     "hotkey_codemirror": "Ctrl+Shift+Y",
     "keymap": "sublime",
