@@ -3,6 +3,10 @@ from tempfile import NamedTemporaryFile
 import os
 import subprocess
 
+from anki.utils import (
+    isLin,
+)
+
 from aqt import (
     QDialog,
     Qt
@@ -77,8 +81,13 @@ class OldVersions(QDialog):
             tooltip("Invalid settings for 'diffcommand'. Must be a list. Aborting ...")
             return
         cmd.extend([cur.name, oldabs])
+        env = os.environ.copy()
+        if isLin:
+            toremove = ['LD_LIBRARY_PATH', 'QT_PLUGIN_PATH', 'QML2_IMPORT_PATH']
+            for e in toremove:
+                env.pop(e, None)
         try:
-            subprocess.Popen(cmd)
+            subprocess.Popen(cmd, env=env)
         except:
             tooltip("Error while trying to open the external editor. Maybe there's an error in your config.")
 

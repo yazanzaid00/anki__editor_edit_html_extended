@@ -5,6 +5,9 @@ import subprocess
 from tempfile import NamedTemporaryFile
 
 from anki.hooks import wrap
+from anki.utils import (
+    isLin,
+)
 
 from aqt import mw
 from aqt.clayout import CardLayout
@@ -50,8 +53,13 @@ def save_clear_editExternal(self, box, tedit):
     cur.write(str.encode(content))
     cur.close()
     cmd = gc("diffcommandstart")
+    env = os.environ.copy()
+    if isLin:
+        toremove = ['LD_LIBRARY_PATH', 'QT_PLUGIN_PATH', 'QML2_IMPORT_PATH']
+        for e in toremove:
+            env.pop(e, None)
     try:
-        subprocess.Popen([cmd[0], cur.name])
+        subprocess.Popen([cmd[0], cur.name], env=env)
     except:
         tooltip("Error while trying to open the external editor. Maybe there's an error in your config.")
         tedit.setPlainText(content)
