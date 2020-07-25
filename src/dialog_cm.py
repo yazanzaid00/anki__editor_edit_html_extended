@@ -7,6 +7,7 @@ from aqt.qt import (
     QKeySequence,
     QSizePolicy,
     QShortcut,
+    pyqtSlot,
 )
 from aqt.utils import (
     askUser,
@@ -119,6 +120,20 @@ other_jsfiles = ["jquery.js", ]
 jsfiles = addon_jsfiles + other_jsfiles
 
 
+def handle_esc_in_vim(webview_inst):
+    pass
+    # print('in handle_esc_in_vim')
+    # https://codemirror.net/doc/manual.html#vimapi
+    # As with the configuration API, the methods are exposed on CodeMirror.Vim and may be 
+    # called at any time.
+    # exitVisualMode(cm: CodeMirror, ?moveHead: boolean)
+    #   Exit visual mode. If moveHead is set to false, the CodeMirror selection will not be 
+    #   touched. The caller assumes the responsibility of putting the cursor in the right place. 
+    # TODO
+    # js = ""
+    # webview_inst.page().runJavaScript(js)
+
+
 class MyWebView(AnkiWebView):
     def bundledScript(self, fname):
         if fname in addon_jsfiles:
@@ -131,6 +146,12 @@ class MyWebView(AnkiWebView):
             return '<link rel="stylesheet" type="text/css" href="%s">' % (codemirror_path + fname)
         else:
             return '<link rel="stylesheet" type="text/css" href="%s">' % self.webBundlePath(fname)
+
+    def onEsc(self):
+        if gc("keymap") == "vim":
+            handle_esc_in_vim(self)
+        else:
+            AnkiWebView.onEsc(self)
 
 
 class CmDialogBase(QDialog):
@@ -168,7 +189,49 @@ class CmDialogBase(QDialog):
         self.web.stdHtml(bodyhtml, cssfiles, jsfiles)
         restoreGeom(self, "1043915942_CmDialog")
         self.web.loadFinished.connect(self.load_finished)
-    
+        # https://stackoverflow.com/questions/56890831/qwidget-cannot-catch-escape-backspace-or-c-x-key-press-events#56895453
+        # Answer by user "eyllanesc", CC BY-SA 4.0
+        #    Events do not necessarily propagate among all widgets, if a widget consumes it 
+        #    then it will no longer propagate to the parent. In the case of the keyboard 
+        #    events will only be consumed first by the widget that has the focus, in your case 
+        #    QWebEngineView consumes them before and prevents it from being projected in 
+        #    other widgets. If you want to hear events from the keyboard of a window then 
+        #    you must use the QShortcuts, and for that you must create a QShortcut
+        #
+        #
+        # also see anki commit message for 34dcf64d760d01d3f3e4f7aa4a6738b725e53afa
+        #     another attempt at fixing key handling
+        #    
+        #     we can't use an event filter on the top level webview, because it
+        #     ignores the return value of the filter and leads to Anki thinking
+        #     keys have been pressed twice
+        #    
+        #     and if we use an event filter on the focusProxy(), the
+        #     keypress/release events are sent even when a text field is currently
+        #     focused, leading to shortcuts being triggered when typing in the answer
+        #    
+        #     to solve this, we move away from handling the key press events
+        #     directly, and instead install shortcuts for the events we want to
+        #     trigger. in addition to the global shortcuts, each state can install
+        #     its own shortcuts, which we remove when transitioning to a new state
+        #    
+        #     also remove the unused canFocus argument to ankiwebview, and accept a parent
+        #     argument as required by the code in forms/
+        #
+        # NOTE the following deactivates Esc in the dialog but only calls
+        # on_Escape if the webview is not focused. With the following line
+        # onEsc from webview.py isn't activated when I press Esc and have the webview 
+        # focused.
+        # QShortcut(QKeySequence("Escape"), self, activated=self.on_Escape)
+
+    # @pyqtSlot()
+    # def on_Escape(self):
+    #     print("outer_Escape")
+    #     if gc("keymap") == "vim":
+    #         handle_esc_in_vim(self.web)
+    #     else:
+    #         self.reject()
+
     def load_finished(self):
         js = f'editor.setValue({json.dumps(self.content)}); moveCursor();'
         self.web.page().runJavaScript(js)
