@@ -164,7 +164,7 @@ class CmDialogBase(QDialog):
         self.dialog.setupUi(self)
         self.dialog.outer.setContentsMargins(0, 0, 0, 0)
         self.dialog.outer.setSpacing(0)
-        self.web = MyWebView(self)
+        self.web = MyWebView(self.parent)
         self.dialog.outer.addWidget(self.web)
         qsp = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         qsp.setVerticalStretch(2)
@@ -242,12 +242,14 @@ class CmDialogBase(QDialog):
         self.execJavaScript(s)
         mw.col.cmhelper_field_content = self.execJavaScript(self.js_save_cmd)
         saveGeom(self, "1043915942_CmDialog")
+        self.web = None
         QDialog.accept(self)
 
     def reject(self):
         ok = askUser("Close and discard changes?")
         if ok:
             saveGeom(self, "1043915942_CmDialog")
+            self.web = None
             QDialog.reject(self)
 
     def closeEvent(self, event):
@@ -255,6 +257,7 @@ class CmDialogBase(QDialog):
         if ok:
             event.ignore()
             saveGeom(self, "1043915942_CmDialog")
+            self.web = None
             QDialog.reject(self)
         else:
             event.ignore()

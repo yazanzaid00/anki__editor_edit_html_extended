@@ -49,7 +49,7 @@ Editor.on_CMdialog_finished = on_CMdialog_finished
 def _cm_start_dialog(self):
     win_title = 'Anki - edit html source code for field in codemirror'
     pretty_content = maybe_format__prettify(self.note.fields[self.original_current_field])
-    d = CmDialogField(None, pretty_content, "htmlmixed", win_title)
+    d = CmDialogField(self.widget, pretty_content, "htmlmixed", win_title)
     # exec_() doesn't work - jseditor isn't loaded = blocked
     # finished.connect via https://stackoverflow.com/questions/39638749/
     d.finished.connect(self.on_CMdialog_finished)
