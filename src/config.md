@@ -1,11 +1,20 @@
 - `Format code after closing (minify/compact)` (default is "true") If true the html source code of a field of a note will be processed with the python package htmlmin. To leave the code unchanged set this config key to false.
 - `Format code before opening (unfold)` (default is "bs4-prettified"). "bs4-prettified" means that the html is formatted by the "pretty" function of the python module beautifulsoup4. Other possible values are false (then the html source code is not processed) or "tweaked". "tweaked" means that the code from luoliyan's add-on "HTML Editor Tweaks" is used.
 - `backup_template_path` (default "false"): If false the versions are saved to a subfolder in the add-on folder in your anki profile.
-- `diffcommandstart` (default `["code", "--diff"]`): Must be a list. This is the command to compare versions. The add-on extends this list with two filenames then this command is called.
+- `editor`
+- `editor_diff` (default `"code --diff"`): Must be a string. This is the command to compare versions. The add-on extends this with two filenames and then this command is called.
 - `editor_menu_show_button`: whether a button on the top right of the editor should be shown. If you also use the add-on "Customize Keyboard Shortcuts" keep this value "true" - otherwise hotkey_codemirror won't work. Maybe there are also conflicts with other add-ons.
 - `hotkey_codemirror` (default "Ctrl+Shift+Y"): shortcut to open the html source view window
 - `keymap`: For details see the official documentation [here](https://codemirror.net/doc/manual.html#keymaps). Other values are "emacs" or "vim". Changes take only effect after restarting Anki.
 - `theme` and `theme night mode`: For a list of available themes see [here](https://codemirror.net/demo/theme.html). Changes take only effect after restarting Anki.
+
+&nbsp;
+
+For Windows users: When adjusting `"editor"` or `editor_diff` remember to escape (duplicate) the backslashes in a path (json uses backslash as a special character), e.g.
+
+    {
+        "editor": "c:\\Program Files\\Notepad++\\notepad++.exe"
+    }
 
 
 #### some useful keycombos for the default keymap
