@@ -36,10 +36,10 @@ def save_text_to_file(text, boxname, filename=False):
     return filename
 
 
-def open_external_editor(cmd_list, args):
+def open_external_editor(cmd_list):
     try:
         with noBundledLibs():
-            proc = subprocess.Popen(cmd_list, **args)
+            proc = subprocess.Popen(cmd_list)
     except:
         tooltip("Error while trying to open the external editor. Maybe there's an error in your config.")
         return None
@@ -56,7 +56,7 @@ def edit_string_externally_and_return_mod(text, filename=None, block=True, boxna
         return
     cmd_list = editor.split() + [filename]
 
-    proc = open_external_editor(cmd_list, {})
+    proc = open_external_editor(cmd_list)
     if proc and block:
         proc.communicate()
         with io.open(filename, 'r', encoding='utf-8') as file:
@@ -66,10 +66,11 @@ def edit_string_externally_and_return_mod(text, filename=None, block=True, boxna
 def diff_text_with_other_file_in_external(text, boxname, otherfile):
     filename = save_text_to_file(text, boxname, filename=False)
 
-    cmd_list = gc("diffcommandstart")
-    if not isinstance(cmd_list, list):
-        tooltip("Invalid settings for 'diffcommandstart'. Must be a list. Aborting ...")
+    cmd_list = gc("editor_diff").split() + [filename, otherfile]
+    print(cmd_list)
+    command = find_executable(cmd_list[0])
+    if not command:
+        tooltip("Error while trying to open the external editor. Maybe there's an error in your config.")
         return
-    cmd_list.extend([filename, otherfile])
-    
-    open_external_editor(cmd_list, {})
+
+    open_external_editor(cmd_list)
