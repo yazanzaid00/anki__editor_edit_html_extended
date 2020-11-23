@@ -22,7 +22,7 @@ from .config import addon_path, gc, pointversion, unique_string
 from .dialog_cm import CmDialogForTemplate
 from .dialog_old_versions import OldVersions
 from .helpers import now, readfile
-from .process_string_in_texteditor import edit_string_externally_and_return_mod
+from .external_editor import edit_string_externally_and_return_mod
 
 
 def template_save_path(self, boxname):
