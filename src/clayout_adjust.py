@@ -1,8 +1,6 @@
 import io
 import os
 import pathlib
-import subprocess
-from tempfile import NamedTemporaryFile
 
 from anki.hooks import wrap
 from anki.utils import (
