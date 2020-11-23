@@ -19,23 +19,13 @@
             "default": false,
             "description": ""
         },
-        "diffcommandstart": {
-            "type": "array",
-            "items": {
-                "type": "string"
-            },
-            "description": ""
+        "editor_diff": {
+            "type": "string",
+            "default": "code -diff"
         },
         "editor": {
             "type": "string",
-            "default": "code"
-        },
-        "editor parameters": {
-            "type": "array",
-            "items": {
-                "type": "string"
-            },
-            "description": ""
+            "default": "code -w"
         },
         "editor_menu_show_button": {
             "type": "boolean",
