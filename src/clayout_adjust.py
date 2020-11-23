@@ -42,7 +42,7 @@ CardLayout.template_save_path = template_save_path
 def editExternal(self, boxname, tedit):
     text = tedit.toPlainText()
     try:
-        new = edit_string_externally_and_return_mod(text, filename=None, block=True, boxname=boxname)
+        new = edit_string_externally_and_return_mod(self, text, filename=None, block=True, boxname=boxname)
     except RuntimeError:
         tooltip('Error when trying to edit externally')
         return

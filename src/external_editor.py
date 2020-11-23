@@ -7,7 +7,7 @@ import sys
 import tempfile
 
 from anki.utils import (
-    isLin,
+    isMac,
     noBundledLibs,
 )
 from aqt.utils import (
@@ -47,7 +47,7 @@ def open_external_editor(cmd_list):
         return proc
 
 
-def edit_string_externally_and_return_mod(text, filename=None, block=True, boxname="css"):
+def edit_string_externally_and_return_mod(self, text, filename=None, block=True, boxname="css"):
     filename = save_text_to_file(text, boxname, filename=False)
 
     editor = get_editor()
@@ -58,10 +58,15 @@ def edit_string_externally_and_return_mod(text, filename=None, block=True, boxna
 
     proc = open_external_editor(cmd_list)
     if proc and block:
+        # in MacOS 10.12 the blocked Anki window was on top and I couldn't raise geany on top of it
+        # But this setVisible approach doesn't work.
+        # if isMac:
+        #     self.setVisible(False)
         proc.communicate()
         with io.open(filename, 'r', encoding='utf-8') as file:
             return file.read()
-
+        # if isMac:
+        #     self.setVisible(True)
 
 def diff_text_with_other_file_in_external(text, boxname, otherfile):
     filename = save_text_to_file(text, boxname, filename=False)
