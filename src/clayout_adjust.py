@@ -39,10 +39,9 @@ def template_save_path(self, boxname):
 CardLayout.template_save_path = template_save_path
 
 
-def editExternal(self, box, tedit):
-    # self.onTemplateSave(box, tedit)
+def editExternal(self, boxname, tedit):
     text = tedit.toPlainText()
-    if box == "css":
+    if boxname == "css":
         ext = ".css"
     else:
         ext = ".html"
