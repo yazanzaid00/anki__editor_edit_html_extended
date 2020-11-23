@@ -27,6 +27,10 @@
             "type": "string",
             "default": "code -w"
         },
+        "editor_also_show_on_MacOS": {
+            "type": "boolean",
+            "default": false
+        },
         "editor_menu_show_button": {
             "type": "boolean",
             "default": true,
