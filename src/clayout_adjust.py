@@ -117,26 +117,24 @@ CardLayout.on_external_edit = on_external_edit
 
 
 
-
-
-
-
+def options_to_contextmenu(self, tedit, boxname, menu):
+    sla = menu.addAction("edit in extra window with html/css editor")
+    sla.triggered.connect(lambda _, s=self: on_external_edit(s, boxname, tedit))
+    sav = menu.addAction("save")
+    sav.triggered.connect(lambda _, s=self: onTemplateSave(s, boxname, tedit))
+    a = menu.addAction("prior versions extra dialog")
+    a.triggered.connect(lambda _, s=self: extra_dialog(s, boxname, tedit))
+    b = menu.addAction("prior versions in file manager")
+    b.triggered.connect(lambda _, s=self: show_in_filemanager(s, boxname, tedit))
+    c = menu.addAction("edit in external text editor")
+    c.triggered.connect(lambda _, s=self: editExternal(s, boxname, tedit))
+    return menu
 
 
 if pointversion < 27:
     def common_context_menu(self, tedit, boxname):
         menu = tedit.createStandardContextMenu()
-        sla = menu.addAction("edit in extra window with html/css editor")
-        sla.triggered.connect(lambda _, s=self: on_external_edit(s, boxname, tedit))
-        sav = menu.addAction("save")
-        sav.triggered.connect(lambda _, s=self: onTemplateSave(s, boxname, tedit))
-        a = menu.addAction("prior versions extra dialog")
-        a.triggered.connect(lambda _, s=self: extra_dialog(s, boxname, tedit))
-        b = menu.addAction("prior versions in file manager")
-        b.triggered.connect(lambda _, s=self: show_in_filemanager(s, boxname, tedit))
-        c = menu.addAction("save, edit external and clear")
-        c.triggered.connect(lambda _, s=self: save_clear_editExternal(s, boxname, tedit))
-        return menu
+        return options_to_contextmenu(self, tedit, boxname, menu)
     CardLayout.common_context_menu = common_context_menu
 
 
@@ -186,16 +184,7 @@ if pointversion >= 28:
             boxname = "css"
         tedit = self.tform.edit_area
         menu = tedit.createStandardContextMenu()
-        sla = menu.addAction("edit in extra window with html/css editor")
-        sla.triggered.connect(lambda _, s=self: on_external_edit(s, boxname, tedit))
-        sav = menu.addAction("save")
-        sav.triggered.connect(lambda _, s=self: onTemplateSave(s, boxname, tedit))
-        a = menu.addAction("prior versions extra dialog")
-        a.triggered.connect(lambda _, s=self: extra_dialog(s, boxname, tedit))
-        b = menu.addAction("prior versions in file manager")
-        b.triggered.connect(lambda _, s=self: show_in_filemanager(s, boxname, tedit))
-        c = menu.addAction("edit in external text editor")
-        c.triggered.connect(lambda _, s=self: editExternal(s, boxname, tedit))
+        menu = options_to_contextmenu(self, tedit, boxname, menu)
         menu.exec_(QCursor.pos())
     CardLayout.make_new_context_menu = make_new_context_menu
 
