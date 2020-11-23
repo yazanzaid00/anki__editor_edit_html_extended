@@ -22,6 +22,7 @@ def get_editor():
         "gedit",
     ]
     if sys.platform == "darwin":
+        editors.append("/Applications/Geany.app/Contents/MacOS/geany")
         editors.append("open -t")
     for editor in editors:
         command = find_executable(editor)
