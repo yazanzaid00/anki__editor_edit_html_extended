@@ -109,7 +109,7 @@ covered by the following copyright and permission notice:
     SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-This add-on bundles and  makes Anki load the js package htmlhint.js,
+This add-on bundles and makes Anki load the js package htmlhint.js,
 which has this LICENSE info, https://github.com/htmlhint/HTMLHint/blob/master/LICENSE.md:
     The htmlhint.js was built according to the instructions from
     https://github.com/htmlhint/HTMLHint/wiki/Developer-guide with "npm run build", also see
@@ -140,6 +140,13 @@ which has thiscopyright and permission notice:
     The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+This add-on bundles the files get_text_editor.py and utils.py from the add-on "External Editor" 
+that was originally made by Carlos Cabrera, https://github.com/pointtonull/anki-external_editor
+in the version from  https://github.com/ijgnd/anki-external_editor
+For their license see: LICENSE_APACHEv2
+
 """
 
 from aqt import gui_hooks
