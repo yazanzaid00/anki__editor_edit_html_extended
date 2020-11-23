@@ -6,67 +6,70 @@ import os
 import sys
 import tempfile
 
-from anki.utils import isLin
-from aqt.utils import tooltip
+from anki.utils import (
+    isLin,
+    noBundledLibs,
+)
+from aqt.utils import (
+    tooltip,
+)
 
 from .config import gc
+from .get_text_editor import get_editor
 
 
-def get_editor(block):
+def save_text_to_file(text, boxname, filename=False):
+    if boxname == "css":
+        ext = ".css"
+    else:
+        ext = ".html"
 
-    user_choice = gc("editor")
-    params = gc("editor parameters")
-
-    if os.path.isfile(user_choice) and os.access(user_choice, os.X_OK):
-        return " ".join([user_choice] + params)
-    editors = [
-        [user_choice, params],
-        ["notepad++.exe", []],
-        ["notepad.exe", []],
-        ["gvim", ["-f"]],
-        ["vim", ["-gf"]],
-        ["atom", []],
-        ["atom.exe", []],
-        ["gedit", []],
-    ]
-    for command, params in editors:
-        executable = shutil.which(command)
-        # find_executable from original add-on doesn't find my VSCode on
-        # Windows but shutil.which does. To avoid other problems I still
-        # run the old code if the new one doesn't help.
-        if not executable:
-            executable = find_executable(command)
-        if executable:
-            return " ".join([executable] + params)
-    if sys.platform == "darwin":
-        return "open -t"
-    raise RuntimeError("Could not find external editor")
+    if not filename:
+        # https://stackoverflow.com/questions/3924117/how-to-use-tempfile-namedtemporaryfile-in-python
+        t = tempfile.NamedTemporaryFile(mode='w+t', delete=False, suffix="current"+ext)
+        filename = t.name
+    else:
+        t = io.open(filename, 'w', encoding='utf-8')
+    with t as temp:
+        temp.write(text)
+        # temp.flush()
+    return filename
 
 
-def edit_string_externally_and_return_mod(text, filename=None, block=True, suffix=".html"):
-    editor = get_editor(block)
+def open_external_editor(cmd_list, args):
+    try:
+        with noBundledLibs():
+            proc = subprocess.Popen(cmd_list, **args)
+    except:
+        tooltip("Error while trying to open the external editor. Maybe there's an error in your config.")
+        return None
+    else:
+        return proc
+
+
+def edit_string_externally_and_return_mod(text, filename=None, block=True, boxname="css"):
+    filename = save_text_to_file(text, boxname, filename=False)
+
+    editor = get_editor()
     if not editor:
         tooltip('no editor found.')
         return
-    if not filename:
-        filename = tempfile.mktemp(suffix=suffix)
-
-    with io.open(filename, 'w', encoding='utf-8') as file:
-        file.write(text)
-
     cmd_list = editor.split() + [filename]
 
-    env = os.environ.copy()
-    if isLin:
-        toremove = ['LD_LIBRARY_PATH', 'QT_PLUGIN_PATH', 'QML2_IMPORT_PATH']
-        for e in toremove:
-            env.pop(e, None)
-    try:
-        proc = subprocess.Popen(cmd_list, close_fds=True, env=env)
-    except:
-        raise RuntimeError
-    else:
-        if block:
-            proc.communicate()
-            with io.open(filename, 'r', encoding='utf-8') as file:
-                return file.read()
+    proc = open_external_editor(cmd_list, {})
+    if proc and block:
+        proc.communicate()
+        with io.open(filename, 'r', encoding='utf-8') as file:
+            return file.read()
+
+
+def diff_text_with_other_file_in_external(text, boxname, otherfile):
+    filename = save_text_to_file(text, boxname, filename=False)
+
+    cmd_list = gc("diffcommandstart")
+    if not isinstance(cmd_list, list):
+        tooltip("Invalid settings for 'diffcommandstart'. Must be a list. Aborting ...")
+        return
+    cmd_list.extend([filename, otherfile])
+    
+    open_external_editor(cmd_list, {})

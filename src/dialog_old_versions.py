@@ -1,11 +1,8 @@
 import io
-from tempfile import NamedTemporaryFile
-import os
-import subprocess
 
-from anki.utils import (
-    isLin,
-)
+import os
+
+
 
 from aqt import (
     QDialog,
@@ -19,7 +16,8 @@ from aqt.utils import (
     tooltip,
 )
 
-from .config import gc
+
+from .external_editor import diff_text_with_other_file_in_external
 from .forms import versions
 
 
@@ -66,30 +64,7 @@ class OldVersions(QDialog):
             tooltip('no saved versions for the "{}" of this model found. Aborting...'.format(
                 self.boxname))
         oldabs = os.path.join(self.folder, old)
-
-        if self.boxname == "css":
-            ext = ".css"
-        else:
-            ext = ".html"
-        suf = "current" + ext
-        cur = NamedTemporaryFile(delete=False, suffix=suf)
-        cur.write(str.encode(self.currContent))
-        cur.close()
-
-        cmd = gc("diffcommandstart")
-        if not isinstance(cmd, list):
-            tooltip("Invalid settings for 'diffcommand'. Must be a list. Aborting ...")
-            return
-        cmd.extend([cur.name, oldabs])
-        env = os.environ.copy()
-        if isLin:
-            toremove = ['LD_LIBRARY_PATH', 'QT_PLUGIN_PATH', 'QML2_IMPORT_PATH']
-            for e in toremove:
-                env.pop(e, None)
-        try:
-            subprocess.Popen(cmd, env=env)
-        except:
-            tooltip("Error while trying to open the external editor. Maybe there's an error in your config.")
+        diff_text_with_other_file_in_external(self.currContent, self.boxname, oldabs)
 
     def reject(self):
         saveGeom(self, "1043915942_OldVersions")
