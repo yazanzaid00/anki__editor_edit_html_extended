@@ -26,7 +26,7 @@ def save_text_to_file(text, boxname, filename=False):
 
     if not filename:
         # https://stackoverflow.com/questions/3924117/how-to-use-tempfile-namedtemporaryfile-in-python
-        t = tempfile.NamedTemporaryFile(mode='w+t', delete=False, suffix="current"+ext)
+        t = tempfile.NamedTemporaryFile(mode='w+t', delete=False, suffix="current"+ext, encoding='utf-8')
         filename = t.name
     else:
         t = io.open(filename, 'w', encoding='utf-8')
