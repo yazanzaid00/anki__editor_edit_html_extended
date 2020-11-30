@@ -8,7 +8,6 @@ import tempfile
 
 from anki.utils import (
     isMac,
-    noBundledLibs,
 )
 from aqt.utils import (
     tooltip,
@@ -36,10 +35,17 @@ def save_text_to_file(text, boxname, filename=False):
     return filename
 
 
+def env_adjust():
+    env = os.environ.copy()
+    toremove = ['LD_LIBRARY_PATH', 'QT_PLUGIN_PATH', 'QML2_IMPORT_PATH']
+    for e in toremove:
+        env.pop(e, None)
+    return env
+
+
 def open_external_editor(cmd_list):
     try:
-        with noBundledLibs():
-            proc = subprocess.Popen(cmd_list)
+        proc = subprocess.Popen(cmd_list, env=env_adjust())
     except:
         tooltip("Error while trying to open the external editor. Maybe there's an error in your config.")
         return None
