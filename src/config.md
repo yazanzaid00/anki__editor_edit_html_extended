@@ -1,5 +1,6 @@
 - `Format code after closing (minify/compact)` (default is "true") If true the html source code of a field of a note will be processed with the python package htmlmin. To leave the code unchanged set this config key to false.
 - `Format code before opening (unfold)` (default is "bs4-prettified"). "bs4-prettified" means that the html is formatted by the "pretty" function of the python module beautifulsoup4. Other possible values are false (then the html source code is not processed) or "tweaked". "tweaked" means that the code from luoliyan's add-on "HTML Editor Tweaks" is used.
+- `"font-family"` (default is `"monospace"`), `"font-size"` (default is `"15px"`): font and font size used in the editor window for the html source code.
 - `backup_template_path` (default "false"): If false the versions are saved to a subfolder in the add-on folder in your anki profile.
 - `editor`
 - `editor_also_show_on_MacOS`: The code that works in Windows and Linux doesn't work on MacOS. I don't have a Mac to test. So on MacOS you have strange behavior like a blocked Anki window that's above your text editor (depending on your version and editor). That's why it's off by default. Hopefully someday some user provides a patch.

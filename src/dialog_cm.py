@@ -179,6 +179,8 @@ class CmDialogBase(QDialog):
         bodyhtml = tmpl_content.format(
             autoformat_function="html_beautify" if mode == "htmlmixed" else "css_beautify",
             content="",
+            font_family=gc("font-family", "monospace"),
+            font_size=gc("font-size", "15px"),
             isvim=keymap[1],
             keymap=keymap[0],
             mode=mode,

@@ -1,6 +1,8 @@
 {
     "Format code after closing (minify/compact)": true,
     "Format code before opening (unfold)": "bs4-prettified",
+    "font-family": "monospace",
+    "font-size": "15px",
     "backup_template_path": false,
     "editor": "code -w",
     "editor_also_show_on_MacOS": false,
