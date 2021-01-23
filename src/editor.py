@@ -1,4 +1,7 @@
 import os
+import warnings
+
+from bs4 import BeautifulSoup
 
 from anki.hooks import addHook, wrap
 
@@ -25,7 +28,19 @@ js_move_cursor = readfile("move_cursor.js")
 
 def on_CMdialog_finished(self, status):
     if status:
-        content = maybe_minify(mw.col.cmhelper_field_content)
+        html = mw.col.cmhelper_field_content
+        # from editor.py/_onHtmlEdit to "fix" invalid html
+        if html.find(">") > -1:
+            # filter html through beautifulsoup so we can strip out things like a
+            # leading </div>
+            html_escaped = self.mw.col.media.escape_media_filenames(html)
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", UserWarning)
+                html_escaped = str(BeautifulSoup(html_escaped, "html.parser"))
+                html = self.mw.col.media.escape_media_filenames(
+                    html_escaped, unescape=True
+                )
+        content = maybe_minify(html)
     else:  # restore old 
         content = self.original_cm_text
 
