@@ -4,14 +4,18 @@ import warnings
 from bs4 import BeautifulSoup
 
 from anki.hooks import addHook, wrap
+from anki.utils import (
+    pointVersion
+)
 
 from aqt import mw
+from aqt.editor import Editor
 from aqt.qt import (
     QKeySequence,
     QShortcut,
     Qt,
 )
-from aqt.editor import Editor
+
 
 from .config import addon_path, gc, unique_string
 from .dialog_cm import CmDialogField
@@ -30,14 +34,20 @@ def on_CMdialog_finished(self, status):
     if status:
         html = mw.col.cmhelper_field_content
         # from editor.py/_onHtmlEdit to "fix" invalid html
+
+        if pointVersion() >= 36:
+            image_func = self.mw.col.media.escape_media_filenames
+        else:
+            image_func = self.mw.col.media.escapeImages
+
         if html.find(">") > -1:
             # filter html through beautifulsoup so we can strip out things like a
             # leading </div>
-            html_escaped = self.mw.col.media.escape_media_filenames(html)
+            html_escaped = image_func(html)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", UserWarning)
                 html_escaped = str(BeautifulSoup(html_escaped, "html.parser"))
-                html = self.mw.col.media.escape_media_filenames(
+                html = image_func(
                     html_escaped, unescape=True
                 )
         content = maybe_minify(html)
