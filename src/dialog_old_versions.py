@@ -1,21 +1,20 @@
 import io
-
 import os
-
-
 
 from aqt import (
     QDialog,
-    Qt
+    Qt,
+    mw,
 )
-
+from anki.utils import (
+    pointVersion,
+)
 from aqt.utils import (
     openFolder,
     restoreGeom,
     saveGeom,
     tooltip,
 )
-
 
 from .external_editor import diff_text_with_other_file_in_external
 from .forms import versions
@@ -24,6 +23,10 @@ from .forms import versions
 class OldVersions(QDialog):
     def __init__(self, parent, note, boxname, folder, currContent):
         QDialog.__init__(self, parent, Qt.Window)
+        if pointVersion() <45:
+            mw.setupDialogGC(self)
+        else:
+            mw.garbage_collect_on_dialog_finish(self)
         self.parent = parent
         self.note = note
         self.boxname = boxname

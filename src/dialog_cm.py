@@ -9,6 +9,9 @@ from aqt.qt import (
     QShortcut,
     pyqtSlot,
 )
+from anki.utils import (
+    pointVersion,
+)
 from aqt.utils import (
     askUser,
     restoreGeom,
@@ -157,6 +160,10 @@ class MyWebView(AnkiWebView):
 class CmDialogBase(QDialog):
     def __init__(self, parent, content, mode, win_title):
         super(CmDialogBase, self).__init__(parent)
+        if pointVersion() <45:
+            mw.setupDialogGC(self)
+        else:
+            mw.garbage_collect_on_dialog_finish(self)
         self.parent = parent
         self.js_save_cmd = "editor.getValue()"
         self.setWindowTitle(win_title)
