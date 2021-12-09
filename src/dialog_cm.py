@@ -3,8 +3,11 @@ import os
 
 from aqt import mw
 from aqt.qt import (
+    QCursor,
     QDialog,
+    QDialogButtonBox,
     QKeySequence,
+    QMenu,
     QSizePolicy,
     QShortcut,
     pyqtSlot,
@@ -21,7 +24,7 @@ from aqt.utils import (
 )
 from aqt.webview import AnkiWebView
 
-from .config import codemirror_path, gc, unique_string
+from .config import addon_path, codemirror_path, gc, unique_string
 from .dialog_old_versions import OldVersions
 if qtmajor == 5:
     from .forms5 import edit_window
@@ -29,6 +32,7 @@ else:
     from .forms6 import edit_window    
 from .helpers import now, readfile
 from .sync_execJavaScript import sync_execJavaScript
+from .dialog_text_display import Text_Displayer
 
 
 themes = ["3024-day", "3024-night", "abcdef", "ambiance", "ambiance-mobile",
@@ -182,6 +186,8 @@ class CmDialogBase(QDialog):
         self.web.setSizePolicy(qsp)
         acceptShortcut = QShortcut(QKeySequence("Ctrl+Return"), self)
         acceptShortcut.activated.connect(self.accept)
+        self.dialog.buttonBox.button(QDialogButtonBox.StandardButton.Help).setText('More')
+        self.dialog.buttonBox.button(QDialogButtonBox.StandardButton.Help).clicked.connect(self.on_more)
         self.web.title = "html source with codemirror"
         self.web.contextMenuEvent = self.contextMenuEvent
         tmpl_content = readfile("codemirror.html")
@@ -244,6 +250,53 @@ class CmDialogBase(QDialog):
     #         handle_esc_in_vim(self.web)
     #     else:
     #         self.reject()
+
+    def on_more(self):
+        m = QMenu(self)
+        a = m.addAction("about this add-on")
+        a.triggered.connect(self.on_about)
+        a = m.addAction("Save/Backup")
+        a.triggered.connect(self.on_save)
+        a = m.addAction("Restore/Import")
+        a.triggered.connect(self.on_import)
+        a = m.addAction("Send to external")
+        a.triggered.connect(self.on_send_to_external)
+        m.exec(QCursor.pos())
+
+    def on_save(self):
+        tooltip('not implemented yet')
+
+    def on_import(self):
+        tooltip('not implemented yet')
+
+    def on_send_to_external(self):
+        tooltip('not implemented yet')
+
+    def on_about(self):
+        with open(os.path.join(addon_path, "license.txt")) as f:
+            text = f.read()
+        help_text = """
+If you have problems with this add-on:
+1. Read [this Anki FAQ](https://faqs.ankiweb.net/when-problems-occur.html)
+2. Disable all other add-ons, then restart Anki and then try again. If this solves your problem you have an add-on conflict and must decide which add-on is more important for you.
+3. If you still have problems, reset the config of this add-on and restart Anki and try again.
+4. If it still doesn't work you report the problem at https://forums.ankiweb.net/t/extended-html-editor-for-fields-and-card-templates-with-some-versioning-official-support-thread/967 and describe the exact steps needed to reproduce the problem.
+
+Anki changes with each update and sometimes this breaks add-ons or changes how they work. So if an add-on no longer works as expected after an add-on: Make sure to have the latest version by manually  checking for add-on updates. Then also have a look at the add-on listing on ankiweb, e.g. https://ankiweb.net/shared/info/1043915942 for this add-on. On these pages add-on creators often  list changes for their add-ons.
+
+
+
+
+
+
+"""
+        td = Text_Displayer(
+            parent=self,
+            text=help_text + text,
+            windowtitle="about the add-on extended html editor ...",
+            dialogname_for_restore="about_cm_dialog",
+            )
+        td.show()
 
     def load_finished(self):
         js = f'editor.setValue({json.dumps(self.content)}); moveCursor();'
