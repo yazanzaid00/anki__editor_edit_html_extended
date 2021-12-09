@@ -6,6 +6,9 @@ from aqt import (
     Qt,
     mw,
 )
+from aqt.qt import (
+    qtmajor,
+)
 from anki.utils import (
     pointVersion,
 )
@@ -17,12 +20,15 @@ from aqt.utils import (
 )
 
 from .external_editor import diff_text_with_other_file_in_external
-from .forms import versions
 
+if qtmajor == 5:
+    from .forms5 import versions
+else:
+    from .forms6 import versions
 
 class OldVersions(QDialog):
     def __init__(self, parent, note, boxname, folder, currContent):
-        QDialog.__init__(self, parent, Qt.Window)
+        QDialog.__init__(self, parent, Qt.WindowType.Window)
         if pointVersion() <45:
             mw.setupDialogGC(self)
         else:

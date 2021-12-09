@@ -75,7 +75,7 @@ def _cm_start_dialog(self):
     win_title = 'Anki - edit html source code for field in codemirror'
     pretty_content = maybe_format__prettify(self.note.fields[self.original_current_field])
     d = CmDialogField(self.widget, pretty_content, "htmlmixed", win_title)
-    # exec_() doesn't work - jseditor isn't loaded = blocked
+    # exec() doesn't work - jseditor isn't loaded = blocked
     # finished.connect via https://stackoverflow.com/questions/39638749/
     d.finished.connect(self.on_CMdialog_finished)
     d.setModal(True)
@@ -109,7 +109,7 @@ def myOnFieldUndoHtmlExtended(self):
 
 def mirror_start(self):
     modifiers = self.mw.app.queryKeyboardModifiers()
-    shift_and_click = modifiers == Qt.ShiftModifier
+    shift_and_click = modifiers == Qt.KeyboardModifier.ShiftModifier
     if shift_and_click:
         myOnFieldUndoHtmlExtended(self)
         return
@@ -120,7 +120,7 @@ Editor.mirror_start = mirror_start
 
 def keystr(k):
     key = QKeySequence(k)
-    return key.toString(QKeySequence.NativeText)
+    return key.toString(QKeySequence.SequenceFormat.NativeText)
 
 
 def setupEditorButtonsFilter(buttons, editor):

@@ -8,6 +8,7 @@ from aqt.qt import (
     QSizePolicy,
     QShortcut,
     pyqtSlot,
+    qtmajor,
 )
 from anki.utils import (
     pointVersion,
@@ -22,7 +23,10 @@ from aqt.webview import AnkiWebView
 
 from .config import codemirror_path, gc, unique_string
 from .dialog_old_versions import OldVersions
-from .forms import edit_window
+if qtmajor == 5:
+    from .forms5 import edit_window
+else:
+    from .forms6 import edit_window    
 from .helpers import now, readfile
 from .sync_execJavaScript import sync_execJavaScript
 
@@ -173,7 +177,7 @@ class CmDialogBase(QDialog):
         self.dialog.outer.setSpacing(0)
         self.web = MyWebView(self.parent)
         self.dialog.outer.addWidget(self.web)
-        qsp = QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        qsp = QSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         qsp.setVerticalStretch(2)
         self.web.setSizePolicy(qsp)
         acceptShortcut = QShortcut(QKeySequence("Ctrl+Return"), self)

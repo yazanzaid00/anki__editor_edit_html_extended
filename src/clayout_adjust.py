@@ -3,9 +3,11 @@ import os
 import pathlib
 
 from anki.hooks import wrap
-from anki.utils import (
-    isMac,
-)
+from anki.utils import pointVersion
+if pointVersion() <= 49:
+    from anki.utils import isMac
+else:
+    from anki.utils import is_mac as isMac
 
 from aqt import mw
 from aqt.clayout import CardLayout
@@ -104,7 +106,7 @@ def on_external_edit(self, boxname, textedit):
     win_title = 'Anki - edit html source code for field in codemirror'
     mode = "css" if boxname == "css" else "htmlmixed"
     d = CmDialogForTemplate(self, content, mode, win_title, boxname, self.note)
-    # exec_() doesn't work - jseditor isn't loaded = blocked
+    # exec() doesn't work - jseditor isn't loaded = blocked
     # finished.connect via https://stackoverflow.com/questions/39638749/
     d.finished.connect(self.on_CMdialog_finished)
     d.setModal(True)
@@ -142,29 +144,29 @@ if pointversion < 27:
 
     def make_context_menu_front(self, location):
         menu = self.common_context_menu(self.tform.front, "front")
-        menu.exec_(QCursor.pos())
+        menu.exec(QCursor.pos())
     CardLayout.make_context_menu_front = make_context_menu_front
 
 
     def make_context_menu_css(self, location):
         menu = self.common_context_menu(self.tform.css, "css")
-        menu.exec_(QCursor.pos())
+        menu.exec(QCursor.pos())
     CardLayout.make_context_menu_css = make_context_menu_css
 
 
     def make_context_menu_back(self, location):
         menu = self.common_context_menu(self.tform.back, "back")
-        menu.exec_(QCursor.pos())
+        menu.exec(QCursor.pos())
     CardLayout.make_context_menu_back = make_context_menu_back
 
 
     def additional_clayout_setup(self):
         # https://stackoverflow.com/a/44770024
-        self.tform.front.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tform.front.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.tform.front.customContextMenuRequested.connect(self.make_context_menu_front)
-        self.tform.css.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tform.css.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.tform.css.customContextMenuRequested.connect(self.make_context_menu_css)
-        self.tform.back.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tform.back.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.tform.back.customContextMenuRequested.connect(self.make_context_menu_back)
     CardLayout.setupMainArea = wrap(CardLayout.setupMainArea, additional_clayout_setup)
 
@@ -187,12 +189,12 @@ if pointversion >= 28:
         tedit = self.tform.edit_area
         menu = tedit.createStandardContextMenu()
         menu = options_to_contextmenu(self, tedit, boxname, menu)
-        menu.exec_(QCursor.pos())
+        menu.exec(QCursor.pos())
     CardLayout.make_new_context_menu = make_new_context_menu
 
 
     def additional_clayout_setup(self):
         # https://stackoverflow.com/a/44770024
-        self.tform.edit_area.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.tform.edit_area.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.tform.edit_area.customContextMenuRequested.connect(self.make_new_context_menu)
     CardLayout.setup_edit_area = wrap(CardLayout.setup_edit_area, additional_clayout_setup)

@@ -6,9 +6,12 @@ import os
 import sys
 import tempfile
 
-from anki.utils import (
-    isMac,
-)
+from anki.utils import pointVersion
+if pointVersion() <= 49:
+    from anki.utils import isMac
+else:
+    from anki.utils import is_mac as isMac
+
 from aqt.utils import (
     tooltip,
 )
