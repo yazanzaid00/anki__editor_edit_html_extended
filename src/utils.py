@@ -87,8 +87,3 @@ def find_executable(cmd):
                 if is_executable(filepath):
                     return filepath + options
     return None
-
-
-# the function anki.utils.pointVersion was only introduced in 2.1.20 
-_, _, point = anki_version.split(".")
-pointversion = int(point)

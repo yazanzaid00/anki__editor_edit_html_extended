@@ -9,9 +9,7 @@ from aqt import (
 from aqt.qt import (
     qtmajor,
 )
-from anki.utils import (
-    pointVersion,
-)
+
 from aqt.utils import (
     openFolder,
     restoreGeom,
@@ -19,6 +17,7 @@ from aqt.utils import (
     tooltip,
 )
 
+from .anki_version_detection import anki_point_version
 from .external_editor import diff_text_with_other_file_in_external
 
 if qtmajor == 5:
@@ -29,7 +28,7 @@ else:
 class OldVersions(QDialog):
     def __init__(self, parent, note, boxname, folder, currContent):
         QDialog.__init__(self, parent, Qt.WindowType.Window)
-        if pointVersion() <45:
+        if anki_point_version < 45:
             mw.setupDialogGC(self)
         else:
             mw.garbage_collect_on_dialog_finish(self)

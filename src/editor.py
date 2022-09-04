@@ -4,9 +4,6 @@ import warnings
 from bs4 import BeautifulSoup
 
 from anki.hooks import addHook, wrap
-from anki.utils import (
-    pointVersion
-)
 
 from aqt import mw
 from aqt.editor import Editor
@@ -15,8 +12,12 @@ from aqt.qt import (
     QShortcut,
     Qt,
 )
+from aqt.utils import (
+    tooltip,
+)
 
 
+from .anki_version_detection import anki_point_version
 from .config import addon_path, gc, unique_string
 from .dialog_cm import CmDialogField
 from .helpers import now, readfile
@@ -35,7 +36,7 @@ def on_CMdialog_finished(self, status):
         html = mw.col.cmhelper_field_content
         # from editor.py/_onHtmlEdit to "fix" invalid html
 
-        if pointVersion() >= 36:
+        if anki_point_version >= 36:
             image_func = self.mw.col.media.escape_media_filenames
         else:
             image_func = self.mw.col.media.escapeImages
@@ -84,6 +85,9 @@ def _cm_start_dialog(self):
 
 
 def cm_start_dialog_helper(self):
+    if self.original_current_field is None:
+        tooltip("No field selected. Aborting ...")
+        return
     self.original_cm_text = self.note.fields[self.original_current_field]
     self.cm_nid = self.note.id
     self.web.eval("""setFormat("insertText", "%s");""" % unique_string)

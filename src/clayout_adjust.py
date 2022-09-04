@@ -3,8 +3,8 @@ import os
 import pathlib
 
 from anki.hooks import wrap
-from anki.utils import pointVersion
-if pointVersion() <= 49:
+from .anki_version_detection import anki_point_version
+if anki_point_version <= 49:
     from anki.utils import isMac
 else:
     from anki.utils import is_mac as isMac
@@ -20,7 +20,8 @@ from aqt.utils import (
     tooltip,
 )
 
-from .config import addon_path, gc, pointversion, unique_string
+from .anki_version_detection import anki_point_version
+from .config import addon_path, gc, unique_string
 from .dialog_cm import CmDialogForTemplate
 from .dialog_old_versions import OldVersions
 from .helpers import now, readfile
@@ -135,7 +136,7 @@ def options_to_contextmenu(self, tedit, boxname, menu):
     return menu
 
 
-if pointversion < 27:
+if anki_point_version < 27:
     def common_context_menu(self, tedit, boxname):
         menu = tedit.createStandardContextMenu()
         return options_to_contextmenu(self, tedit, boxname, menu)
@@ -178,7 +179,7 @@ if pointversion < 27:
 
 
 
-if pointversion >= 28:
+if anki_point_version >= 28:
     def make_new_context_menu(self, location):
         if self.tform.front_button.isChecked():
             boxname = "front"

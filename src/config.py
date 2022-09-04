@@ -2,9 +2,6 @@ import os
 from aqt import mw
 from anki import version as anki_version
 
-_, _, point = anki_version.split(".")
-pointversion = int(point)
-
 
 def gc(arg, fail=False):
     conf = mw.addonManager.getConfig(__name__)

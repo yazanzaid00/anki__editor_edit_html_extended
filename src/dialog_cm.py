@@ -13,9 +13,7 @@ from aqt.qt import (
     pyqtSlot,
     qtmajor,
 )
-from anki.utils import (
-    pointVersion,
-)
+
 from aqt.utils import (
     askUser,
     restoreGeom,
@@ -24,6 +22,7 @@ from aqt.utils import (
 )
 from aqt.webview import AnkiWebView
 
+from .anki_version_detection import anki_point_version
 from .config import addon_path, codemirror_path, gc, unique_string
 from .dialog_old_versions import OldVersions
 if qtmajor == 5:
@@ -168,7 +167,7 @@ class MyWebView(AnkiWebView):
 class CmDialogBase(QDialog):
     def __init__(self, parent, content, mode, win_title):
         super(CmDialogBase, self).__init__(parent)
-        if pointVersion() <45:
+        if anki_point_version < 45:
             mw.setupDialogGC(self)
         else:
             mw.garbage_collect_on_dialog_finish(self)
