@@ -303,8 +303,8 @@ Anki changes with each update and sometimes this breaks add-ons or changes how t
 
     def accept(self):
         # replace cursor with unique string
-        s = """insertTextAtCursor('%s')""" % unique_string
-        self.execJavaScript(s)
+        # s = """insertTextAtCursor('%s')""" % unique_string
+        # self.execJavaScript(s)
         mw.col.cmhelper_field_content = self.execJavaScript(self.js_save_cmd)
         saveGeom(self, "1043915942_CmDialog")
         self.web = None
