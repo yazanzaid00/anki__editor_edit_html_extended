@@ -5,7 +5,7 @@
 - `editor`
 - `editor_also_show_on_MacOS`: The code that works in Windows and Linux doesn't work on MacOS. I don't have a Mac to test. So on MacOS you have strange behavior like a blocked Anki window that's above your text editor (depending on your version and editor). That's why it's off by default. Hopefully someday some user provides a patch.
 - `editor_diff` (default `"code --diff"`): Must be a string. This is the command to compare versions. The add-on extends this with two filenames and then this command is called.
-- `editor_menu_show_button`: whether a button on the top right of the editor should be shown. If you also use the add-on "Customize Keyboard Shortcuts" keep this value "true" - otherwise hotkey_codemirror won't work. Maybe there are also conflicts with other add-ons.
+- `anki editor: add button`: whether a button on the top right of the editor should be shown. If you also use the add-on "Customize Keyboard Shortcuts" keep this value "true" - otherwise hotkey_codemirror won't work. Maybe there are also conflicts with other add-ons.
 - `hotkey_codemirror` (default "Ctrl+Shift+Y"): shortcut to open the html source view window
 - `keymap`: For details see the official documentation [here](https://codemirror.net/doc/manual.html#keymaps). Other values are "emacs" or "vim". Changes take only effect after restarting Anki.
 - `theme` and `theme night mode`: For a list of available themes see [here](https://codemirror.net/demo/theme.html). Changes take only effect after restarting Anki.

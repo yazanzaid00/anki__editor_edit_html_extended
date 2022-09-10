@@ -7,7 +7,7 @@
     "editor": "code -w",
     "editor_also_show_on_MacOS": false,
     "editor_diff": "code --diff",
-    "editor_menu_show_button": true,
+    "anki editor: add button": true,
     "hotkey_codemirror": "Ctrl+Shift+Y",
     "keymap": "sublime",
     "theme night mode": "dracula",
