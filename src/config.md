@@ -3,7 +3,7 @@
 - `"font-family"` (default is `"monospace"`), `"font-size"` (default is `"15px"`): font and font size used in the editor window for the html source code.
 - `backup_template_path` (default "false"): If false the versions are saved to a subfolder in the add-on folder in your anki profile.
 - `editor`
-- `editor_also_show_on_MacOS`: The code that works in Windows and Linux doesn't work on MacOS. I don't have a Mac to test. So on MacOS you have strange behavior like a blocked Anki window that's above your text editor (depending on your version and editor). That's why it's off by default. Hopefully someday some user provides a patch.
+- `external: show this option in clayout context"`: That's off by default since I don't have a Mac and could never test this on MacOS and expect that there are problems with the MacOS permission system. On Windows and Linux it mostly worked in 2020 but I didn't test this functionality later. If you are interested in this functionality in 2022 the best maintained add-on seems to be [External Note Editor (vim, vscode, atom, ...)](https://ankiweb.net/shared/info/704320065).
 - `editor_diff` (default `"code --diff"`): Must be a string. This is the command to compare versions. The add-on extends this with two filenames and then this command is called.
 - `anki editor: add button`: whether a button on the top right of the editor should be shown. If you also use the add-on "Customize Keyboard Shortcuts" keep this value "true" - otherwise hotkey_codemirror won't work. Maybe there are also conflicts with other add-ons.
 - `hotkey_codemirror` (default "Ctrl+Shift+Y"): shortcut to open the html source view window

@@ -27,7 +27,7 @@
             "type": "string",
             "default": "code -w"
         },
-        "editor_also_show_on_MacOS": {
+        "external: show this option in clayout context": {
             "type": "boolean",
             "default": false
         },

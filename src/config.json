@@ -5,7 +5,7 @@
     "font-size": "15px",
     "backup_template_path": false,
     "external: command to open field content in editor": "code -w",
-    "editor_also_show_on_MacOS": false,
+    "external: show this option in clayout context": false,
     "external: command to diff versions": "code --diff",
     "anki editor: add button": true,
     "hotkey_codemirror": "Ctrl+Shift+Y",

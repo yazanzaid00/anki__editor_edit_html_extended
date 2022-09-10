@@ -129,10 +129,9 @@ def options_to_contextmenu(self, tedit, boxname, menu):
     a.triggered.connect(lambda _, s=self: extra_dialog(s, boxname, tedit))
     b = menu.addAction("prior versions in file manager")
     b.triggered.connect(lambda _, s=self: show_in_filemanager(s, boxname, tedit))
-    if isMac and not gc("editor_also_show_on_MacOS"):
-        return menu
-    c = menu.addAction("edit in external text editor")
-    c.triggered.connect(lambda _, s=self: edit_external(s, boxname, tedit))
+    if gc("external: show this option in clayout context"):
+        c = menu.addAction("edit in external text editor")
+        c.triggered.connect(lambda _, s=self: edit_external(s, boxname, tedit))
     return menu
 
 
