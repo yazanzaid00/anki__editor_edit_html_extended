@@ -7,6 +7,6 @@ from . import editor
 from . import clayout_adjust
 
 
-def onLoadHere():
+def run_after_profile_did_open():
     mw.col.cmhelper_field_content = None
-gui_hooks.profile_did_open.append(onLoadHere)
+gui_hooks.profile_did_open.append(run_after_profile_did_open)
