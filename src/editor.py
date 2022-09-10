@@ -68,6 +68,8 @@ def on_CMdialog_finished(self, status):
     self.loadNote(focusTo=self.original_current_field)
     # the function setSelectionByCharacterOffsets isn't precise and sometimes produces errors 
     # with complex content and ruins the field contents. So cursor sync just works in one way ....
+    # in 2022-09 I removed the code that inserted the unique_string in tinymce5 to
+    # mark the cursor position with commit d082c75
     # self.web.eval(js_move_cursor % pos)
 Editor.on_CMdialog_finished = on_CMdialog_finished
 
