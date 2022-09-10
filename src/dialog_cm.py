@@ -303,6 +303,7 @@ Anki changes with each update and sometimes this breaks add-ons or changes how t
 
     def accept(self):
         # replace cursor with unique string
+        # the following code crashes Anki 2.1.54/qt6 on MacOS, see #6
         # s = """insertTextAtCursor('%s')""" % unique_string
         # self.execJavaScript(s)
         mw.col.cmhelper_field_content = self.execJavaScript(self.js_save_cmd)
