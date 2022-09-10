@@ -6,6 +6,8 @@ License: GPLv3 or later, https://github.com/pycom/EricShort/blob/025a9933bdbe92f
 
 via https://riverbankcomputing.com/pipermail/pyqt/2016-May/037449.html
 https://github.com/pycom/EricShort/blob/master/UI/Previewers/PreviewerHTML.py
+
+still basically unchanged in 2022-09 in eric7/UI/Previewers/PreviewerHTML.py
 """
 
 from aqt.qt import QEventLoop
