@@ -189,7 +189,7 @@ class CmDialogBase(QDialog):
         self.dialog.buttonBox.button(QDialogButtonBox.StandardButton.Help).clicked.connect(self.on_more)
         self.web.title = "html source with codemirror"
         self.web.contextMenuEvent = self.contextMenuEvent
-        tmpl_content = readfile("codemirror.html")
+        tmpl_content = read_file("codemirror.html")
         # the following seems to break cm so I just remove it <!--StartFragment--><!--EndFragment-->
         self.content = content.replace("<!--StartFragment-->", "").replace("<!--EndFragment-->","")
         bodyhtml = tmpl_content.format(

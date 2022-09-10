@@ -28,7 +28,7 @@ from .html_process import maybe_minify, maybe_format__prettify
 # from Sync Cursor Between Fields and HTML Editor by Glutanimate
 # https://ankiweb.net/shared/info/138856093
 # based on SO posts by Tim Down / B T (http://stackoverflow.com/q/16095155)
-js_move_cursor = readfile("move_cursor.js")
+js_move_cursor = read_file("move_cursor.js")
 
 
 def on_CMdialog_finished(self, status):
@@ -98,7 +98,7 @@ def cm_start_dialog(self):
     self.saveNow(lambda s=self: cm_start_dialog_helper(s))
 
 
-def myOnFieldUndoHtmlExtended(self):
+def undo_html_extended(self):
     if self.cm_nid != self.note.id:
         return
     if not hasattr(self, "original_cm_text") or not self.original_cm_text:
@@ -115,7 +115,7 @@ def mirror_start(self):
     modifiers = self.mw.app.queryKeyboardModifiers()
     shift_and_click = modifiers == Qt.KeyboardModifier.ShiftModifier
     if shift_and_click:
-        myOnFieldUndoHtmlExtended(self)
+        undo_html_extended(self)
         return
     self.original_current_field = self.currentField
     self.saveNow(lambda s=self: cm_start_dialog(s))
@@ -127,7 +127,7 @@ def keystr(k):
     return key.toString(QKeySequence.SequenceFormat.NativeText)
 
 
-def setupEditorButtonsFilter(buttons, editor):
+def add_editor_button(buttons, editor):
     k = gc("hotkey_codemirror", "Ctrl+Shift+Y")
     b = editor.addButton(
         icon=os.path.join(addon_path, "web/codemirror/doc", "logo.png"),
@@ -140,7 +140,7 @@ def setupEditorButtonsFilter(buttons, editor):
 
 
 # set shortcut for built-in viewer WITHOUT adding a button
-def mySetupShortcuts(self):
+def setupShortcuts_wrapper(self):
     cuts = [
         (gc('hotkey_codemirror'), self.mirror_start),
     ]
@@ -154,6 +154,6 @@ def mySetupShortcuts(self):
 
 
 if gc("anki editor: add button", True):
-    addHook("setupEditorButtons", setupEditorButtonsFilter)
+    addHook("setupEditorButtons", add_editor_button)
 else:
-    Editor.setupShortcuts = wrap(Editor.setupShortcuts, mySetupShortcuts)
+    Editor.setupShortcuts = wrap(Editor.setupShortcuts, setupShortcuts_wrapper)
