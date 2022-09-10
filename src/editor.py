@@ -20,7 +20,7 @@ from aqt.utils import (
 from .anki_version_detection import anki_point_version
 from .config import addon_path, gc, unique_string
 from .dialog_cm import CmDialogField
-from .helpers import now, readfile
+from .helpers import now, read_file
 from .html_process import maybe_minify, maybe_format__prettify
 
 

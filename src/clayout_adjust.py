@@ -24,7 +24,7 @@ from .anki_version_detection import anki_point_version
 from .config import addon_path, gc, unique_string
 from .dialog_cm import CmDialogForTemplate
 from .dialog_old_versions import OldVersions
-from .helpers import now, readfile
+from .helpers import now, read_file
 from .external_editor import edit_string_externally_and_return_mod
 
 

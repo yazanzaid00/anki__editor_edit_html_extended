@@ -29,7 +29,7 @@ if qtmajor == 5:
     from .forms5 import edit_window
 else:
     from .forms6 import edit_window    
-from .helpers import now, readfile
+from .helpers import now, read_file
 from .sync_execJavaScript import sync_execJavaScript
 from .dialog_text_display import Text_Displayer
 
