@@ -42,7 +42,7 @@ def template_save_path(self, boxname):
 CardLayout.template_save_path = template_save_path
 
 
-def editExternal(self, boxname, tedit):
+def edit_external(self, boxname, tedit):
     text = tedit.toPlainText()
     try:
         new = edit_string_externally_and_return_mod(self, text, filename=None, block=True, boxname=boxname)
@@ -51,7 +51,7 @@ def editExternal(self, boxname, tedit):
         return
     if new:
         tedit.setPlainText(new)
-CardLayout.editExternal = editExternal
+CardLayout.edit_external = edit_external
 
 
 def extra_dialog(self, box, tedit):
@@ -73,7 +73,7 @@ def show_in_filemanager(self, box, tedit):
 CardLayout.show_in_filemanager = show_in_filemanager
 
 
-def saveStringForBox(self, boxname, content):
+def save_string_for_box(self, boxname, content):
     if boxname == "css":
         ext = ".css"
     else:
@@ -85,13 +85,13 @@ def saveStringForBox(self, boxname, content):
     with io.open(p, "w", encoding="utf-8") as f:
         f.write(content)
         tooltip('saved as {}'.format(filename))
-CardLayout.saveStringForBox = saveStringForBox
+CardLayout.save_string_for_box = save_string_for_box
 
 
-def onTemplateSave(self, boxname, tedit):
+def on_template_save(self, boxname, tedit):
     content = tedit.toPlainText()
-    self.saveStringForBox(boxname, content)
-CardLayout.onTemplateSave = onTemplateSave
+    self.save_string_for_box(boxname, content)
+CardLayout.on_template_save = on_template_save
 
 
 def on_CMdialog_finished(self, status):
@@ -124,7 +124,7 @@ def options_to_contextmenu(self, tedit, boxname, menu):
     sla = menu.addAction("edit in extra window with html/css editor")
     sla.triggered.connect(lambda _, s=self: on_external_edit(s, boxname, tedit))
     sav = menu.addAction("save")
-    sav.triggered.connect(lambda _, s=self: onTemplateSave(s, boxname, tedit))
+    sav.triggered.connect(lambda _, s=self: on_template_save(s, boxname, tedit))
     a = menu.addAction("prior versions extra dialog")
     a.triggered.connect(lambda _, s=self: extra_dialog(s, boxname, tedit))
     b = menu.addAction("prior versions in file manager")
@@ -132,7 +132,7 @@ def options_to_contextmenu(self, tedit, boxname, menu):
     if isMac and not gc("editor_also_show_on_MacOS"):
         return menu
     c = menu.addAction("edit in external text editor")
-    c.triggered.connect(lambda _, s=self: editExternal(s, boxname, tedit))
+    c.triggered.connect(lambda _, s=self: edit_external(s, boxname, tedit))
     return menu
 
 

@@ -343,7 +343,7 @@ class CmDialogForTemplate(CmDialogBase):
         super(CmDialogForTemplate, self).__init__(parent, content, mode, win_title)
         self.boxname = boxname
         self.note = note
-        self.dialog.pb_save.clicked.connect(self.onTemplateSave)
+        self.dialog.pb_save.clicked.connect(self.on_template_save)
         self.dialog.pb_viewold.clicked.connect(self.onView)
 
     # maybe relevant for editor?
@@ -359,9 +359,9 @@ class CmDialogForTemplate(CmDialogBase):
     #     # don't use model['name'] in case a user renames a template ...
     #     return os.path.join(base, str(self.model['id']), self.boxname)
 
-    def onTemplateSave(self):
+    def on_template_save(self):
         content = self.execJavaScript(self.js_save_cmd)
-        self.parent.saveStringForBox(self.boxname, content)
+        self.parent.save_string_for_box(self.boxname, content)
         # maybe reintrodue as as class  
         #     if self.boxname == "css":
         #         ext = ".css"
@@ -376,11 +376,11 @@ class CmDialogForTemplate(CmDialogBase):
         #         tooltip('saved as {}'.format(filename))
 
     def onView(self):
-        currContent = self.execJavaScript(self.js_save_cmd)
+        curr_content = self.execJavaScript(self.js_save_cmd)
         folder = self.parent.template_save_path(self.boxname)
         if not os.path.isdir(folder):
             tooltip("no prior versions found")
             return
-        d = OldVersions(self, self.note, self.boxname, folder, currContent)
+        d = OldVersions(self, self.note, self.boxname, folder, curr_content)
         if d.exec():
             pass
