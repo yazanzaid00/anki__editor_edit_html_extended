@@ -4,7 +4,7 @@
     "font-family": "monospace",
     "font-size": "15px",
     "backup_template_path": false,
-    "editor": "code -w",
+    "external: command to open field content in editor": "code -w",
     "editor_also_show_on_MacOS": false,
     "editor_diff": "code --diff",
     "anki editor: add button": true,

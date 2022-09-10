@@ -12,10 +12,10 @@
 
 &nbsp;
 
-For Windows users: When adjusting `"editor"` or `editor_diff` remember to escape (duplicate) the backslashes in a path (json uses backslash as a special character), e.g.
+For Windows users: When adjusting `"external: command to open field content in editor"` or `editor_diff` remember to escape (duplicate) the backslashes in a path (json uses backslash as a special character), e.g.
 
     {
-        "editor": "c:\\Program Files\\Notepad++\\notepad++.exe"
+        "external: command to open field content in editor": "c:\\Program Files\\Notepad++\\notepad++.exe"
     }
 
 

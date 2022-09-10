@@ -23,7 +23,7 @@
             "type": "string",
             "default": "code -diff"
         },
-        "editor": {
+        "external: command to open field content in editor": {
             "type": "string",
             "default": "code -w"
         },

@@ -7,7 +7,7 @@ from .utils import is_executable, find_executable
 
 
 def get_editor():
-    user_choice = gc("editor")
+    user_choice = gc("external: command to open field content in editor")
     if is_executable(user_choice):
         return user_choice
     editors = [
