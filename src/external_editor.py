@@ -80,7 +80,7 @@ def edit_string_externally_and_return_mod(self, text, filename=None, block=True,
 def diff_text_with_other_file_in_external(text, boxname, otherfile):
     filename = save_text_to_file(text, boxname, filename=False)
 
-    cmd_list = gc("editor_diff").split() + [filename, otherfile]
+    cmd_list = gc("external: command to diff versions").split() + [filename, otherfile]
     command = find_executable(cmd_list[0])
     if not command:
         tooltip("Error while trying to open the external editor. Maybe there's an error in your config.")

@@ -19,7 +19,7 @@
             "default": false,
             "description": ""
         },
-        "editor_diff": {
+        "external: command to diff versions": {
             "type": "string",
             "default": "code -diff"
         },

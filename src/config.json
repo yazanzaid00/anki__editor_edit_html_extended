@@ -6,7 +6,7 @@
     "backup_template_path": false,
     "external: command to open field content in editor": "code -w",
     "editor_also_show_on_MacOS": false,
-    "editor_diff": "code --diff",
+    "external: command to diff versions": "code --diff",
     "anki editor: add button": true,
     "hotkey_codemirror": "Ctrl+Shift+Y",
     "keymap": "sublime",
