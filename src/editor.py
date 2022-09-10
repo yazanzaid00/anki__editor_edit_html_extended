@@ -56,7 +56,7 @@ def on_CMdialog_finished(self, status):
         content = self.original_cm_text
 
     try:
-        note = mw.col.getNote(self.nid)
+        note = mw.col.getNote(self.nid) if anki_point_version <= 53 else mw.col.get_note(self.nid)
     except:   # new note
         self.note.fields[self.original_current_field] = content.replace(unique_string, "")
         # self.note.flush()  # doesn't work in 2.1.28
