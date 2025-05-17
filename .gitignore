@@ -9,6 +9,7 @@
 # Keep the main source directory.
 # All files and subdirectories within src/ are necessary for the add-on's runtime.
 !src/
+!src/**
 
 # Files to keep at the root
 !LICENSE_AGPL
