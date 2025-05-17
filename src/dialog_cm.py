@@ -1,6 +1,7 @@
 import json
 import os
 
+# aqt imports
 from aqt import mw
 from aqt.qt import (
     QCursor,
@@ -10,10 +11,9 @@ from aqt.qt import (
     QMenu,
     QSizePolicy,
     QShortcut,
-    pyqtSlot,
+    pyqtSlot,  # Not used, consider removing if truly unused elsewhere
     qtmajor,
 )
-
 from aqt.utils import (
     askUser,
     restoreGeom,
@@ -21,15 +21,24 @@ from aqt.utils import (
     tooltip,
 )
 from aqt.webview import AnkiWebView
+try:
+    # new API in Anki ≥ 2.1.49
+    from aqt.theme import theme_manager
+except ImportError:
+    # pre-2.1.49 fallback
+    theme_manager = None
 
+# Third-party imports (None in this section currently)
+
+# Own module imports
 from .anki_version_detection import anki_point_version
 from .config import addon_path, codemirror_path, gc, unique_string
 from .dialog_old_versions import OldVersions
 if qtmajor == 5:
     from .forms5 import edit_window
 else:
-    from .forms6 import edit_window    
-from .helpers import now, read_file
+    from .forms6 import edit_window
+from .helpers import now, read_file # now is not used, consider removing
 from .sync_execJavaScript import sync_execJavaScript
 from .dialog_text_display import Text_Displayer
 
@@ -47,44 +56,76 @@ themes = ["3024-day", "3024-night", "abcdef", "ambiance", "ambiance-mobile",
           "moxer", "material-darker", "material-palenight", "material-ocean"]
 
 
-if mw.pm.night_mode():
-    if gc('theme night mode') in themes:
-        selectedtheme = gc('theme night mode')
-    else:
-        selectedtheme = "dracula"
-else:
-    if gc('theme') in themes:
-        selectedtheme = gc('theme')
-    else:
-        selectedtheme = "neat"
-themepath = "codemirror/theme/" + selectedtheme + ".css"
+def dark_mode_active() -> bool:
+    try:
+        # Anki ≥2.1.49
+        # theme_manager is already imported at the top with a try-except
+        if theme_manager:
+            return bool(theme_manager.night_mode)
+        # Fall through to pre-2.1.49 if theme_manager is None (failed import)
+    except AttributeError: # Handles cases where theme_manager might exist but not night_mode
+        pass # Fall through to pre-2.1.49 logic
 
-uk = gc('keymap', "some_string_so_that_I_can_lower_it").lower()
-if uk in ["sublime", "emacs", "vim"]:
-    if uk == 'vim':
-        keymap = [uk, "true"]
-    else:
-        keymap = [uk, "false"]
-else:
-    keymap = ["sublime", "false"]
-keymappath = "codemirror/keymap/" + keymap[0] + ".js"
+    # pre-2.1.49
+    try:
+        val = mw.pm.night_mode
+        return bool(val() if callable(val) else val)
+    except Exception:
+        return False
 
 
-addon_cssfiles = ["codemirror/lib/codemirror.css",
+def selected_theme() -> str:
+    night = dark_mode_active()
+    key = 'theme night mode' if night else 'theme'
+    default_theme_name = 'dracula' if night else 'neat' # Python-defined default
+
+    val_from_config = gc(key) # gc returns the value or False (its default for `fail`)
+
+    # Use value from config if it's a valid theme string, otherwise use Python-defined default
+    return val_from_config if isinstance(val_from_config, str) and val_from_config in themes else default_theme_name
+
+
+def theme_path():
+    return "codemirror/theme/" + selected_theme() + ".css"
+
+
+def keymap():
+    default_keymap_val = "sublime"
+    uk_from_gc = gc('keymap')  # Get value or False
+    # Apply default if gc returned False or not a string
+    current_keymap = uk_from_gc if isinstance(uk_from_gc, str) and uk_from_gc else default_keymap_val
+    uk = current_keymap.lower()
+    if uk in ["sublime", "emacs", "vim"]:
+        if uk == 'vim':
+            km_setting = [uk, "true"]
+        else:
+            km_setting = [uk, "false"]
+    else:
+        km_setting = ["sublime", "false"] # Default if uk is not one of the recognized keymaps
+    return km_setting
+
+
+def key_map_path():
+    return "codemirror/keymap/" + keymap()[0] + ".js"
+
+
+def css_files():
+    return       ["codemirror/lib/codemirror.css",
                   "codemirror/addon/lint/lint.css",
                   "codemirror/addon/hint/show-hint.css",
                   "codemirror/addon/dialog/dialog.css",
                   "codemirror/addon/search/matchesonscrollbar.css",
-                  themepath,
+                  theme_path(),
                   "codemirror/addon/display/fullscreen.css",
                   "webview_override.css",
                   ]
-other_cssfiles = []
-cssfiles = addon_cssfiles + other_cssfiles
 
-addon_jsfiles = ["codemirror/lib/codemirror.js",
+
+
+def get_addon_jsfiles():
+    return      ["codemirror/lib/codemirror.js",
                  "htmlhint.js",
-                #  JS error /_addons/1043915942/web/csslint.js:7719 Uncaught TypeError: Cannot create property 'errors' on string 'true' 
+                #  JS error /_addons/1043915942/web/csslint.js:7719 Uncaught TypeError: Cannot create property 'errors' on string 'true'
                 #  "csslint.js",
                 # adding these files also doesn't help
                 #  "csslint-node.js",
@@ -95,7 +136,7 @@ addon_jsfiles = ["codemirror/lib/codemirror.js",
                  "beautify.js",
                  "beautify-css.js",
                  "beautify-html.js",
-                 keymappath,
+                 key_map_path(),
                  "codemirror/addon/hint/show-hint.js",
                  "codemirror/addon/hint/javascript-hint.js",
                  "codemirror/addon/hint/html-hint.js",
@@ -126,19 +167,20 @@ addon_jsfiles = ["codemirror/lib/codemirror.js",
                  "codemirror/addon/lint/css-lint.js",
                  ]
 
-other_jsfiles = ["jquery.js", ]
-jsfiles = addon_jsfiles + other_jsfiles
+
+def return_all_js_files():
+    return get_addon_jsfiles() + ["jquery.js", ]
 
 
 def handle_esc_in_vim(webview_inst):
     pass
     # print('in handle_esc_in_vim')
     # https://codemirror.net/doc/manual.html#vimapi
-    # As with the configuration API, the methods are exposed on CodeMirror.Vim and may be 
+    # As with the configuration API, the methods are exposed on CodeMirror.Vim and may be
     # called at any time.
     # exitVisualMode(cm: CodeMirror, ?moveHead: boolean)
-    #   Exit visual mode. If moveHead is set to false, the CodeMirror selection will not be 
-    #   touched. The caller assumes the responsibility of putting the cursor in the right place. 
+    #   Exit visual mode. If moveHead is set to false, the CodeMirror selection will not be
+    #   touched. The caller assumes the responsibility of putting the cursor in the right place.
     # TODO
     # js = ""
     # webview_inst.page().runJavaScript(js)
@@ -146,13 +188,13 @@ def handle_esc_in_vim(webview_inst):
 
 class MyWebView(AnkiWebView):
     def bundledScript(self, fname):
-        if fname in addon_jsfiles:
+        if fname in get_addon_jsfiles():
             return '<script src="%s"></script>' % (codemirror_path + fname)
         else:
             return '<script src="%s"></script>' % self.webBundlePath(fname)
 
     def bundledCSS(self, fname):
-        if fname in addon_cssfiles:
+        if fname in css_files():
             return '<link rel="stylesheet" type="text/css" href="%s">' % (codemirror_path + fname)
         else:
             return '<link rel="stylesheet" type="text/css" href="%s">' % self.webBundlePath(fname)
@@ -192,53 +234,62 @@ class CmDialogBase(QDialog):
         tmpl_content = read_file("codemirror.html")
         # the following seems to break cm so I just remove it <!--StartFragment--><!--EndFragment-->
         self.content = content.replace("<!--StartFragment-->", "").replace("<!--EndFragment-->","")
+
+        default_font_family_val = "monospace"
+        font_family_from_gc = gc("font-family")
+        current_font_family = font_family_from_gc if isinstance(font_family_from_gc, str) and font_family_from_gc else default_font_family_val
+
+        default_font_size_val = "15px"
+        font_size_from_gc = gc("font-size")
+        current_font_size = font_size_from_gc if isinstance(font_size_from_gc, str) and font_size_from_gc else default_font_size_val
+
         bodyhtml = tmpl_content.format(
             autoformat_function="html_beautify" if mode == "htmlmixed" else "css_beautify",
             content="",
-            font_family=gc("font-family", "monospace"),
-            font_size=gc("font-size", "15px"),
-            isvim=keymap[1],
-            keymap=keymap[0],
+            font_family=current_font_family,
+            font_size=current_font_size,
+            isvim=keymap()[1],
+            keymap=keymap()[0],
             mode=mode,
-            theme=selectedtheme,
+            theme=selected_theme(),
             unique_string=unique_string,
             lint="true",
         )
-        self.web.stdHtml(bodyhtml, cssfiles, jsfiles)
+        self.web.stdHtml(bodyhtml, css_files(), return_all_js_files())
         restoreGeom(self, "1043915942_CmDialog")
         self.web.loadFinished.connect(self.load_finished)
         # https://stackoverflow.com/questions/56890831/qwidget-cannot-catch-escape-backspace-or-c-x-key-press-events#56895453
         # Answer by user "eyllanesc", CC BY-SA 4.0
-        #    Events do not necessarily propagate among all widgets, if a widget consumes it 
-        #    then it will no longer propagate to the parent. In the case of the keyboard 
-        #    events will only be consumed first by the widget that has the focus, in your case 
-        #    QWebEngineView consumes them before and prevents it from being projected in 
-        #    other widgets. If you want to hear events from the keyboard of a window then 
+        #    Events do not necessarily propagate among all widgets, if a widget consumes it
+        #    then it will no longer propagate to the parent. In the case of the keyboard
+        #    events will only be consumed first by the widget that has the focus, in your case
+        #    QWebEngineView consumes them before and prevents it from being projected in
+        #    other widgets. If you want to hear events from the keyboard of a window then
         #    you must use the QShortcuts, and for that you must create a QShortcut
         #
         #
         # also see anki commit message for 34dcf64d760d01d3f3e4f7aa4a6738b725e53afa
         #     another attempt at fixing key handling
-        #    
+        #
         #     we can't use an event filter on the top level webview, because it
         #     ignores the return value of the filter and leads to Anki thinking
         #     keys have been pressed twice
-        #    
+        #
         #     and if we use an event filter on the focusProxy(), the
         #     keypress/release events are sent even when a text field is currently
         #     focused, leading to shortcuts being triggered when typing in the answer
-        #    
+        #
         #     to solve this, we move away from handling the key press events
         #     directly, and instead install shortcuts for the events we want to
         #     trigger. in addition to the global shortcuts, each state can install
         #     its own shortcuts, which we remove when transitioning to a new state
-        #    
+        #
         #     also remove the unused canFocus argument to ankiwebview, and accept a parent
         #     argument as required by the code in forms/
         #
         # NOTE the following deactivates Esc in the dialog but only calls
         # on_Escape if the webview is not focused. With the following line
-        # onEsc from webview.py isn't activated when I press Esc and have the webview 
+        # onEsc from webview.py isn't activated when I press Esc and have the webview
         # focused.
         # QShortcut(QKeySequence("Escape"), self, activated=self.on_Escape)
 
@@ -272,8 +323,12 @@ class CmDialogBase(QDialog):
         tooltip('not implemented yet')
 
     def on_about(self):
-        with open(os.path.join(addon_path, "license.txt")) as f:
-            text = f.read()
+        license_file_path = addon_path + "/license.txt"
+        try:
+            with open(license_file_path) as f:
+                text = f.read()
+        except FileNotFoundError:
+            text = "License file not found."
         help_text = """
 If you have problems with this add-on:
 1. Read [this Anki FAQ](https://faqs.ankiweb.net/when-problems-occur.html)
@@ -298,38 +353,48 @@ Anki changes with each update and sometimes this breaks add-ons or changes how t
         td.show()
 
     def load_finished(self):
-        js = f'editor.setValue({json.dumps(self.content)}); moveCursor();'
-        self.web.page().runJavaScript(js)
+        if self.web:
+            js = f'editor.setValue({json.dumps(self.content)}); moveCursor();'
+            self.web.page().runJavaScript(js)
 
     def accept(self):
         # replace cursor with unique string
         # the following code crashes Anki 2.1.54/qt6 on MacOS, see #6
         # s = """insertTextAtCursor('%s')""" % unique_string
         # self.execJavaScript(s)
-        mw.col.cmhelper_field_content = self.execJavaScript(self.js_save_cmd)
+        if self.web:
+            mw.col.cmhelper_field_content = self.execJavaScript(self.js_save_cmd)
         saveGeom(self, "1043915942_CmDialog")
-        self.web = None
+        if self.web:
+            self.web.cleanup()
         QDialog.accept(self)
+        self.web = None
 
     def reject(self):
         ok = askUser("Close and discard changes?")
         if ok:
             saveGeom(self, "1043915942_CmDialog")
-            self.web = None
+            if self.web:
+                self.web.cleanup()
             QDialog.reject(self)
+            self.web = None
 
     def closeEvent(self, event):
         ok = askUser("Close and discard changes?")
         if ok:
             event.ignore()
             saveGeom(self, "1043915942_CmDialog")
-            self.web = None
+            if self.web:
+                self.web.cleanup()
             QDialog.reject(self)
+            self.web = None
         else:
             event.ignore()
 
     def execJavaScript(self, script):
-        return sync_execJavaScript(self.web, script)
+        if self.web:
+            return sync_execJavaScript(self.web, script)
+        return None
 
 
 class CmDialogField(CmDialogBase):
@@ -363,7 +428,7 @@ class CmDialogForTemplate(CmDialogBase):
     def on_template_save(self):
         content = self.execJavaScript(self.js_save_cmd)
         self.parent.save_string_for_box(self.boxname, content)
-        # maybe reintrodue as as class  
+        # maybe reintrodue as as class
         #     if self.boxname == "css":
         #         ext = ".css"
         #     else:

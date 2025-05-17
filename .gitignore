@@ -1,0 +1,80 @@
+# Ignore everything by default
+*
+!src/
+
+# --- Whitelist: Un-ignore specific files and directories ---
+
+# .gitignore itself
+!.gitignore
+!src/.gitignore
+
+# Your data directories
+!user_files/
+!src/user_files/
+
+!web/
+!src/web/
+
+# Files to keep at both the root and in the src/ directory
+!LICENSE_AGPL
+!src/LICENSE_AGPL
+!LICENSE_APACHEv2
+!src/LICENSE_APACHEv2
+!LICENSE_GPL
+!src/LICENSE_GPL
+!__init__.py
+!src/__init__.py
+!anki_version_detection.py
+!src/anki_version_detection.py
+!clayout_adjust.py
+!src/clayout_adjust.py
+!codemirror.html
+!src/codemirror.html
+!config.json
+!src/config.json
+!config.md
+!src/config.md
+!config.py
+!src/config.py
+!config.schema.json
+!src/config.schema.json
+!dialog_cm.py
+!src/dialog_cm.py
+!dialog_old_versions.py
+!src/dialog_old_versions.py
+!dialog_text_display.py
+!src/dialog_text_display.py
+!editor.py
+!src/editor.py
+!external_editor.py
+!src/external_editor.py
+!get_text_editor.py
+!src/get_text_editor.py
+!helpers.py
+!src/helpers.py
+!html_process.py
+!src/html_process.py
+!license.txt
+!src/license.txt
+!manifest.json
+!src/manifest.json
+!move_cursor.js
+!src/move_cursor.js
+!sync_execJavaScript.py
+!src/sync_execJavaScript.py
+!utils.py
+!src/utils.py
+!README.md
+!src/README.md
+!ankiweb.html
+!src/ankiweb.html
+
+# --- Standard Ignores (apply everywhere) ---
+
+# Python byte code and cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# macOS system files
+.DS_Store

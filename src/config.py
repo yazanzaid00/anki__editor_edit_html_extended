@@ -21,3 +21,21 @@ unique_string = '2508ee56881b40e8a221feaf3605105e'  # random uuid, Umlaute break
 
 regex = r"(web[/\\].*)"
 mw.addonManager.setWebExports(__name__, regex)
+
+
+DEFAULTS = {
+    "hotkey_codemirror": "Ctrl+Shift+Y",
+    "anki_editor_add_button": True,
+    # Default for codemirror theme, matching the default in the cm settings dialog
+    "theme": "default",
+    "mini": False,  # minify html code after editing in codemirror
+    "format": True,  # format html code before editing in codemirror
+    "FontSize": 18,
+    "addonInfo_removals_version": "0.0.0",  # last version that removed an addon from addonInfo
+    "copyHtmlOnShortcut": False, # Added new preference
+}
+
+
+# stores configuration values
+class Config:
+    pass
