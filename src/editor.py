@@ -134,45 +134,42 @@ def keystr(k):
 
 
 # Generic function to copy selected HTML from a webview
-def copy_selected_html_from_webview(webview, parent_for_dialogs=None):
+def copy_selected_html_from_webview(webview, parent_for_dialogs=None, warn_if_empty=True):
     if parent_for_dialogs is None:
         parent_for_dialogs = mw # Default to main window if no specific parent
 
     # Updated JavaScript to reconstruct anki-mathjax tags and return direct HTML string
-    js_get_selection_data = """
-        (function() {
-            // 1) grab the Range contents
-            let sel = (document.activeElement?.shadowRoot
-                       ? document.activeElement.shadowRoot.getSelection()
-                       : (document.activeElement?.getSelection
-                          ? document.activeElement.getSelection()
-                          : window.getSelection()));
-            if (!sel || sel.rangeCount === 0) {
-                return ""; // Return empty string if no selection
+    js_get_selection_data = r"""
+        (function () {
+          let sel = (document.activeElement?.shadowRoot
+                     ? document.activeElement.shadowRoot.getSelection()
+                     : (document.activeElement?.getSelection
+                        ? document.activeElement.getSelection()
+                        : window.getSelection()));
+          if (!sel || !sel.rangeCount || sel.rangeCount === 0) { return ""; }
+
+          const frag = sel.getRangeAt(0).cloneContents();
+          const c    = document.createElement("div");
+          c.appendChild(frag);
+
+          // 1. unwrap Anki helpers
+          c.querySelectorAll('anki-frame,frame-start,frame-end').forEach(n => n.replaceWith(...n.childNodes));
+          c.querySelectorAll('[data-frames]').forEach(n => n.removeAttribute('data-frames'));
+
+          // 2. rebuild every <anki-mathjax>
+          c.querySelectorAll('anki-mathjax').forEach(el => {
+            let tex = el.getAttribute('data-mathjax');     // v3 path
+            if (!tex && window.MathJax?.Hub?.getJaxFor) {  // v2 path
+              const jax = MathJax.Hub.getJaxFor(el);
+              tex = jax?.originalText;
             }
-            let frag = sel.getRangeAt(0).cloneContents();
-            let container = document.createElement("div");
-            container.appendChild(frag);
+            tex = tex || el.textContent;                   // final fallback
+            const clean = document.createElement('anki-mathjax');
+            clean.textContent = tex;
+            el.replaceWith(clean);
+          });
 
-            // 2) unwrap <anki-frame> around mathjax
-            container.querySelectorAll('anki-frame').forEach(frame => {
-                let mj = frame.querySelector('anki-mathjax');
-                if (mj) {
-                    frame.replaceWith(mj.cloneNode(true));
-                }
-            });
-
-            // 3) rebuild <anki-mathjax> tags from their data-mathjax attr
-            container.querySelectorAll('anki-mathjax').forEach(el => {
-                let code = el.getAttribute('data-mathjax') || el.textContent;
-                let newEl = document.createElement('anki-mathjax');
-                newEl.setAttribute('data-mathjax', code);
-                newEl.textContent = code;
-                el.replaceWith(newEl);
-            });
-
-            // 4) return the cleaned HTML
-            return container.innerHTML;
+          return c.innerHTML;
         })();
     """
 
@@ -181,13 +178,14 @@ def copy_selected_html_from_webview(webview, parent_for_dialogs=None):
         html = html_str # No JSON parsing needed
 
         if not html: # Check if the HTML string is empty
-            showWarning("No text selected to copy.", parent=parent_for_dialogs)
+            if warn_if_empty: # Only show warning if warn_if_empty is True
+                showWarning("No text selected to copy.", parent=parent_for_dialogs)
             return
 
         try:
             # Directly set the HTML string as plain text on the clipboard.
             # This ensures the raw HTML source is copied.
-            QApplication.clipboard().setText(html, QClipboard.Mode.Clipboard)
+            QApplication.clipboard().setText(html, QClipboard.Mode.Clipboard) # Use QClipboard.Mode.Clipboard
         except Exception as e:
             showWarning(f"Failed to copy HTML to clipboard: {e}", parent=parent_for_dialogs)
 
@@ -202,7 +200,7 @@ def copy_selected_html_from_webview(webview, parent_for_dialogs=None):
 # Function to handle copying HTML (used by the manual button)
 def onCopyHtml(editor):
     # editor.widget is the QWidget containing the editor, good parent for dialogs
-    copy_selected_html_from_webview(editor.web, parent_for_dialogs=editor.widget)
+    copy_selected_html_from_webview(editor.web, parent_for_dialogs=editor.widget) # warn_if_empty defaults to True
 
 # Function to set up the new copy button
 def setupCopyButton(buttons: list[str], editor):

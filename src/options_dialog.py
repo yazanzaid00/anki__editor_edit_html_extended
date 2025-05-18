@@ -1,4 +1,3 @@
-\
 # options_dialog.py
 from PyQt6.QtWidgets import (
     QDialog, QVBoxLayout, QCheckBox, QDialogButtonBox
@@ -19,7 +18,7 @@ except ImportError:
     # A more robust way might be to pass addon_name to show_config_dialog.
     # For now, relying on addon_path from config.py.
     print("Extended HTML Editor: Could not determine ADDON_NAME for config dialog.")
-    ADDON_NAME = "1043915942" # Fallback to known ID, less ideal.
+    ADDON_NAME = "1900436383" # Fallback to known ID, less ideal.
 
 
 class ConfigDialog(QDialog):
@@ -33,11 +32,23 @@ class ConfigDialog(QDialog):
         layout = QVBoxLayout(self)
 
         self.copy_html_shortcut_checkbox = QCheckBox("Copy selection as HTML source on Ctrl+C/⌘C")
-        # Use gc (from .config) to ensure DEFAULTS are respected if key is missing
-        # However, getConfig should already provide this based on schema or defaults.
-        # For simplicity, directly get from loaded config, assuming gc populates it initially.
         self.copy_html_shortcut_checkbox.setChecked(self.config.get("copyHtmlOnShortcut", False))
         layout.addWidget(self.copy_html_shortcut_checkbox)
+
+        self.copy_plain_checkbox = QCheckBox("Copy cleaned plain-text/LaTeX on Ctrl+C/⌘C")
+        self.copy_plain_checkbox.setChecked(self.config.get("copyPlainOnShortcut", False))
+        layout.addWidget(self.copy_plain_checkbox)
+
+        def sync_boxes(src, other):
+            if src.isChecked():
+                other.setChecked(False)
+
+        self.copy_html_shortcut_checkbox.stateChanged.connect(
+            lambda _ : sync_boxes(self.copy_html_shortcut_checkbox,
+                                  self.copy_plain_checkbox))
+        self.copy_plain_checkbox.stateChanged.connect(
+            lambda _ : sync_boxes(self.copy_plain_checkbox,
+                                  self.copy_html_shortcut_checkbox))
 
         button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel)
         button_box.accepted.connect(self.accept)
@@ -46,6 +57,7 @@ class ConfigDialog(QDialog):
 
     def accept(self):
         self.config["copyHtmlOnShortcut"] = self.copy_html_shortcut_checkbox.isChecked()
+        self.config["copyPlainOnShortcut"] = self.copy_plain_checkbox.isChecked()
         mw.addonManager.writeConfig(self.addon_name, self.config)
         super().accept()
 

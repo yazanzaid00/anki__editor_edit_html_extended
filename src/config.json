@@ -9,8 +9,9 @@
     "font-family": "monospace",
     "font-size": "15px",
     "hotkey_codemirror": "Ctrl+Shift+Y",
+    "copyHtmlOnShortcut": true,
+    "copyPlainOnShortcut": false,
     "keymap": "sublime",
     "theme night mode": "dracula",
     "theme": "xq-light"
 }
- 
