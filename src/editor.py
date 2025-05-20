@@ -26,6 +26,7 @@ from .config import addon_path, gc, unique_string
 from .dialog_cm import CmDialogField
 from .helpers import now, read_file
 from .html_process import maybe_minify, maybe_format__prettify
+from .web_utils import call_get_selection  # Added import
 
 
 
@@ -138,90 +139,6 @@ def copy_selected_html_from_webview(webview, parent_for_dialogs=None, warn_if_em
     if parent_for_dialogs is None:
         parent_for_dialogs = mw # Default to main window if no specific parent
 
-    # Use the comprehensive JS from __init__.py that returns {html: ..., text: ...}
-    js_get_selection_data = r"""
-      (function () {
-        let sel = (document.activeElement?.shadowRoot
-                   ? document.activeElement.shadowRoot.getSelection()
-                   : (document.activeElement?.getSelection
-                      ? document.activeElement.getSelection()
-                      : window.getSelection()));
-        if (!sel || !sel.rangeCount) { return { html: "", text: "" }; }
-
-        const c = document.createElement("div");
-        c.append(sel.getRangeAt(0).cloneContents());
-
-        // Store HTML before modification for plain text
-        const html_content = c.innerHTML;
-
-        c.querySelectorAll('anki-frame,frame-start,frame-end')
-          .forEach(n => n.replaceWith(...n.childNodes));
-        c.querySelectorAll('[data-frames]').forEach(n => n.removeAttribute('data-frames'));
-
-        c.querySelectorAll('anki-mathjax').forEach(el => {
-          let tex = el.getAttribute('data-mathjax');
-          if (!tex && window.MathJax?.Hub?.getJaxFor) {
-            const jax = MathJax.Hub.getJaxFor(el);
-            tex = jax?.originalText;
-          }
-          tex = tex || el.textContent;
-          const clean = document.createElement('anki-mathjax');
-          clean.textContent = tex;
-          el.replaceWith(clean); // For HTML output
-        });
-
-        const final_html = c.innerHTML; // HTML after anki-mathjax processing
-
-        // Define isDisplayContext function (as provided in user prompt)
-        function isDisplayContext(el) {
-          // TODO: Implement display context detection logic
-          /*
-          // if they gave us a text node, use its parent
-          if (el.nodeType === Node.TEXT_NODE) el = el.parentElement;
-          const parent = el.parentElement;
-
-          // 1. block: parent contains *only* this formula (ignoring whitespace)
-          const parentText = parent.textContent.trim();
-          const formulaText = el.textContent.trim();
-          if (parentText === formulaText) {
-            console.warn("isDisplayContext: parent contains only this formula");
-            return false; // Should be true for block, but per user request, returning false
-          }
-
-          // 2. <br> immediately before or after (check any sibling, text or element)
-          const prev = el.previousSibling;
-          const next = el.nextSibling;
-          if ((prev && prev.nodeName === "BR") || (next && next.nodeName === "BR")) {
-            console.warn("isDisplayContext: <br> immediately before or after");
-            return true;
-          }
-          */
-          // otherwise inline
-          return false;
-        }
-
-        // For plain text: re-parse original fragment and extract text from MathJax
-        const text_c = document.createElement("div");
-        text_c.innerHTML = html_content; // Use original HTML to avoid processing anki-mathjax twice for text
-        text_c.querySelectorAll('anki-mathjax').forEach(el=>{
-         let tex = el.getAttribute('data-mathjax')||el.textContent;
-         // Use isDisplayContext to choose delimiters
-         let wrappedTex;
-         if (isDisplayContext(el)) {
-           wrappedTex = '\\\\[' + tex + '\\\\]'; // Escaped for Python string
-         } else {
-           wrappedTex = '\\\\(' + tex + '\\\\)'; // Escaped for Python string
-         }
-         el.replaceWith(document.createTextNode(wrappedTex));
-        });
-
-        return {
-          html: final_html,
-          text: text_c.innerText.replace(/\\u00A0/g,' ').trim()
-        };
-      })();
-    """
-
     def on_selection_copied(payload): # Expects an object/dict
         if not payload:
             if warn_if_empty:
@@ -243,7 +160,6 @@ def copy_selected_html_from_webview(webview, parent_for_dialogs=None, warn_if_em
             cb = QApplication.clipboard()
             if copy_type == "html":
                 # For HTML, it's good practice to set both HTML and plain text versions
-                # However, the request was minimal, so just setting text for now.
                 # For a richer HTML copy, one would use QMimeData.
                 cb.setText(content_to_copy, QClipboard.Mode.Clipboard)
             else: # plain text
@@ -252,12 +168,7 @@ def copy_selected_html_from_webview(webview, parent_for_dialogs=None, warn_if_em
         except Exception as e:
             showWarning(f"Failed to copy {copy_type} to clipboard: {e}", parent=parent_for_dialogs)
 
-    if hasattr(webview, 'evalWithCallback'):
-        webview.evalWithCallback(js_get_selection_data, on_selection_copied)
-    elif hasattr(webview, 'page') and hasattr(webview.page(), 'runJavaScript'):
-        webview.page().runJavaScript(js_get_selection_data, on_selection_copied)
-    else:
-        print(f"Extended HTML Editor: Cannot copy content, webview type {type(webview)} not supported for JS evaluation.")
+    call_get_selection(webview, on_selection_copied)
 
 
 # Function to handle copying HTML (used by the manual button)

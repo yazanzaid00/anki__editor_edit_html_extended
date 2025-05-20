@@ -12,9 +12,10 @@ from . import clayout_adjust
 # Import for new features
 from .options_dialog import show_config_dialog
 from .config import gc # To read the "copyHtmlOnShortcut" preference
+from .web_utils import call_get_selection # Added import
 
 from PyQt6.QtCore import QObject, QEvent, Qt as Qt_core, QTimer, QMimeData # Renamed to avoid conflict with wildcard import; Added QTimer and QMimeData
-from PyQt6.QtGui import QKeySequence
+from PyQt6.QtGui import QKeySequence, QClipboard # Added QClipboard
 from aqt.webview import AnkiWebView, AnkiWebViewKind # Ensure AnkiWebViewKind is imported
 from aqt.editor import EditorState # Ensure EditorState is imported
 
@@ -58,7 +59,20 @@ class GlobalHtmlCopyFilter(QObject):
             return False # nothing enabled → let macOS/Anki handle Copy
         if ev.type() != QEvent.Type.KeyPress:
             return False
-        if not ev.matches(QKeySequence.StandardKey.Copy):
+
+        # Only react to the configured shortcut (e.g. ⌘⇧H / Ctrl⇧H)
+        shortcut_str = gc("copyShortcut", False) # Fetch from config
+        if not shortcut_str: # If False (from gc default) or empty string from config
+            shortcut_str = "Ctrl+Shift+H" # Default to Ctrl+Shift+H
+        wanted = QKeySequence(shortcut_str)
+
+        # Qt ≥ 6: use keyCombination(); Qt 5: fall back to modifiers()|key()
+        try:
+            current = QKeySequence(ev.keyCombination())
+        except AttributeError:                 # Qt5
+            current = QKeySequence(int(ev.modifiers().value) | ev.key())
+
+        if current != wanted:
             return False
 
         w = mw.app.focusWidget()
@@ -75,7 +89,7 @@ class GlobalHtmlCopyFilter(QObject):
         if hasattr(w, "selectedHtml"):
             selected_html = w.selectedHtml().strip() # Added .strip()
             if selected_html and gc("copyHtmlOnShortcut", False) and not gc("copyPlainOnShortcut", False):
-                cb = QApplication.clipboard()
+                cb = mw.app.clipboard() # Use mw.app.clipboard()
                 data = QMimeData()
                 data.setText(selected_html) # Set as plain text
                 data.setHtml(selected_html) # Set as HTML
@@ -87,91 +101,7 @@ class GlobalHtmlCopyFilter(QObject):
         if not plain:          # nothing selected -> default copy
             return False       # let Qt handle empty selection
 
-        # full JS that unwraps helpers **and** reconstructs <anki-mathjax>
-        js_get_selection_data = r"""
-          (function () {
-            let sel = (document.activeElement?.shadowRoot
-                       ? document.activeElement.shadowRoot.getSelection()
-                       : (document.activeElement?.getSelection
-                          ? document.activeElement.getSelection()
-                          : window.getSelection()));
-            if (!sel || !sel.rangeCount) { return { html: "", text: "" }; }
-
-            const c = document.createElement("div");
-            c.append(sel.getRangeAt(0).cloneContents());
-
-            // Store HTML before modification for plain text
-            const html_content = c.innerHTML;
-
-            c.querySelectorAll('anki-frame,frame-start,frame-end')
-              .forEach(n => n.replaceWith(...n.childNodes));
-            c.querySelectorAll('[data-frames]').forEach(n => n.removeAttribute('data-frames'));
-
-            c.querySelectorAll('anki-mathjax').forEach(el => {
-              let tex = el.getAttribute('data-mathjax');
-              if (!tex && window.MathJax?.Hub?.getJaxFor) {
-                const jax = MathJax.Hub.getJaxFor(el);
-                tex = jax?.originalText;
-              }
-              tex = tex || el.textContent;
-              const clean = document.createElement('anki-mathjax');
-              clean.textContent = tex;
-              el.replaceWith(clean); // For HTML output
-            });
-
-            const final_html = c.innerHTML; // HTML after anki-mathjax processing
-
-            // Define isDisplayContext function (as provided in user prompt)
-            function isDisplayContext(el) {
-              // TODO: Implement display context detection logic
-              /*
-              // if they gave us a text node, use its parent
-              if (el.nodeType === Node.TEXT_NODE) el = el.parentElement;
-              const parent = el.parentElement;
-
-              // 1. block: parent contains *only* this formula (ignoring whitespace)
-              const parentText = parent.textContent.trim();
-              const formulaText = el.textContent.trim();
-              if (parentText === formulaText) {
-                console.warn("isDisplayContext: parent contains only this formula");
-                return false; // Should be true for block, but per user request, returning false
-              }
-
-              // 2. <br> immediately before or after (check any sibling, text or element)
-              const prev = el.previousSibling;
-              const next = el.nextSibling;
-              if ((prev && prev.nodeName === "BR") || (next && next.nodeName === "BR")) {
-                console.warn("isDisplayContext: <br> immediately before or after");
-                return true;
-              }
-              */
-              // otherwise inline
-              return false;
-            }
-
-            // For plain text: re-parse original fragment and extract text from MathJax
-            const text_c = document.createElement("div");
-            text_c.innerHTML = html_content; // Use original HTML to avoid processing anki-mathjax twice for text
-            text_c.querySelectorAll('anki-mathjax').forEach(el=>{
-             let tex = el.getAttribute('data-mathjax')||el.textContent;
-             // Use isDisplayContext to choose delimiters
-             let wrappedTex;
-             if (isDisplayContext(el)) {
-               wrappedTex = '\\[' + tex + '\\]';
-             } else {
-               wrappedTex = '\\(' + tex + '\\)';
-             }
-             el.replaceWith(document.createTextNode(wrappedTex));
-            });
-
-            return {
-              html: final_html,
-              text: text_c.innerText.replace(/\u00A0/g,' ').trim()
-            };
-          })();
-        """
-
-        cb = QApplication.clipboard()
+        cb = mw.app.clipboard() # Use mw.app.clipboard()
         done_flag = {"done": False}    # mutable flag captured by the lambdas
 
         def publish(payload):
@@ -196,16 +126,15 @@ class GlobalHtmlCopyFilter(QObject):
                     mime.setText("") # Set empty string if text_out is empty or None
             elif want_html: # Elif to give plain priority
                 src = html or plain
-                mime.setText(src)
-                mime.setHtml(src)
+                mime.setText(src) # For plain text representation
+                mime.setHtml(src) # For HTML representation
             else:
                 return # neither wanted - do nothing (should be caught by the eventFilter's initial check)
 
-
-            QApplication.clipboard().setMimeData(mime, QClipboard.Mode.Clipboard)
+            mw.app.clipboard().setMimeData(mime, QClipboard.Mode.Clipboard) # Use mw.app.clipboard()
 
         # ① ask the page for cleaned-up HTML
-        w.page().runJavaScript(js_get_selection_data, publish)
+        call_get_selection(w, publish)
 
         # ② safety-net: after 150 ms publish plain text if JS never replied
         QTimer.singleShot(150, lambda: publish(None))
