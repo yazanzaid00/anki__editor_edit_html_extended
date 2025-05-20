@@ -1,10 +1,18 @@
 # options_dialog.py
 from PyQt6.QtWidgets import (
-    QDialog, QVBoxLayout, QCheckBox, QDialogButtonBox
+    QDialog, QVBoxLayout, QCheckBox, QDialogButtonBox, QLabel, QKeySequenceEdit
 )
 from PyQt6.QtCore import Qt
 from aqt import mw
+from aqt.qt import QKeySequence
 import os
+
+from .config import gc
+
+# Helper function to convert key sequence to string (similar to editor.py)
+def keystr(k):
+    key = QKeySequence(k)
+    return key.toString(QKeySequence.SequenceFormat.NativeText)
 
 # Assuming config.py and this file are in the same directory (addon root)
 # and config.py defines addon_path
@@ -12,11 +20,6 @@ try:
     from .config import addon_path
     ADDON_NAME = os.path.basename(addon_path)
 except ImportError:
-    # Fallback if addon_path is not available, though it should be.
-    # This might happen if structure is different or during isolated testing.
-    # __name__ here would be 'options_dialog'. We need the package name.
-    # A more robust way might be to pass addon_name to show_config_dialog.
-    # For now, relying on addon_path from config.py.
     print("Extended HTML Editor: Could not determine ADDON_NAME for config dialog.")
     ADDON_NAME = "1900436383" # Fallback to known ID, less ideal.
 
@@ -31,13 +34,34 @@ class ConfigDialog(QDialog):
 
         layout = QVBoxLayout(self)
 
-        self.copy_html_shortcut_checkbox = QCheckBox("Copy selection as HTML source on Ctrl+C/⌘C")
+        # Shortcut editor
+        layout.addWidget(QLabel("Shortcut for Copy HTML/Plain Text:"))
+        self.shortcut_edit = QKeySequenceEdit()
+        self.shortcut_edit.setKeySequence(QKeySequence(gc("copyShortcut", False) or "Ctrl+Shift+H"))
+        layout.addWidget(self.shortcut_edit)
+
+        # Get the configured shortcut for checkbox labels
+        current_shortcut_str = self.shortcut_edit.keySequence().toString(QKeySequence.SequenceFormat.PortableText)
+        if not current_shortcut_str:
+            current_shortcut_str = "Ctrl+Shift+H"
+
+        self.copy_html_shortcut_checkbox = QCheckBox(f"Copy selection as HTML source on {keystr(current_shortcut_str)}")
         self.copy_html_shortcut_checkbox.setChecked(self.config.get("copyHtmlOnShortcut", False))
         layout.addWidget(self.copy_html_shortcut_checkbox)
 
-        self.copy_plain_checkbox = QCheckBox("Copy cleaned plain-text/LaTeX on Ctrl+C/⌘C")
+        self.copy_plain_checkbox = QCheckBox(f"Copy cleaned plain-text/LaTeX on {keystr(current_shortcut_str)}")
         self.copy_plain_checkbox.setChecked(self.config.get("copyPlainOnShortcut", False))
         layout.addWidget(self.copy_plain_checkbox)
+
+        # Update checkbox labels when shortcut_edit changes
+        def update_checkbox_labels(key_sequence):
+            ks = keystr(key_sequence.toString(QKeySequence.SequenceFormat.PortableText))
+            if not ks:
+                ks = keystr("Ctrl+Shift+H")
+            self.copy_html_shortcut_checkbox.setText(f"Copy selection as HTML source on {ks}")
+            self.copy_plain_checkbox.setText(f"Copy cleaned plain-text/LaTeX on {ks}")
+
+        self.shortcut_edit.keySequenceChanged.connect(update_checkbox_labels)
 
         def sync_boxes(src, other):
             if src.isChecked():
@@ -58,10 +82,10 @@ class ConfigDialog(QDialog):
     def accept(self):
         self.config["copyHtmlOnShortcut"] = self.copy_html_shortcut_checkbox.isChecked()
         self.config["copyPlainOnShortcut"] = self.copy_plain_checkbox.isChecked()
+        self.config["copyShortcut"] = self.shortcut_edit.keySequence().toString(QKeySequence.SequenceFormat.PortableText)
         mw.addonManager.writeConfig(self.addon_name, self.config)
         super().accept()
 
 def show_config_dialog(current_addon_name_for_config):
-    # Pass the add-on name from __init__.py's __name__
     dialog = ConfigDialog(mw, current_addon_name=current_addon_name_for_config)
     dialog.exec()

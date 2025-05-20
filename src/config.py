@@ -33,6 +33,7 @@ DEFAULTS = {
     "FontSize": 18,
     "addonInfo_removals_version": "0.0.0",  # last version that removed an addon from addonInfo
     "copyHtmlOnShortcut": False, # Added new preference
+    "copyShortcut": "Ctrl+Shift+H",   # macOS will display this as ⌘⇧H automatically
 }
 
 
